@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-    id("com.google.devtools.ksp")
 }
 
 kotlin {
@@ -83,25 +82,6 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-
-    //UI
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-
-    //Architecture & Navigation
-    implementation(libs.androidx.core.ktx) //Kotlin extensions for standard Android Java APIs
-    implementation(libs.androidx.lifecycle.runtime.ktx) //Lifecycle: Makes coroutines aware of Activity/Fragment life (prevents leaks)
-    implementation(libs.androidx.activity.compose) //Integration: Connects Activities to Compose
-    implementation(libs.androidx.navigation.compose) //Routing: Navigation between screens
-
-    //Data Persistence
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler) //Annotation processor
-    implementation(libs.kotlinx.serialization.json) //JSON Parsing
-    implementation(libs.androidx.datastore.preferences) //DataStore
-    implementation(libs.androidx.datastore.preferences.core)
 }
 
 compose.desktop {
