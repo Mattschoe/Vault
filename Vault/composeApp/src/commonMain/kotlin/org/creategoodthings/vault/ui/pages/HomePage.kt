@@ -81,65 +81,71 @@ fun HomePage(
         Product("Mælk", LocalDate(2025, 11, 30), 5),
     )
 
-    LazyColumn(
-        modifier = modifier
-    ) {
-        //region TITEL
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(Res.string.welcome) + ",",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                    Text(
-                        text = user,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineLarge
+    PageShell(
+        modifier = modifier,
+    ) { padding ->
+        LazyColumn(
+            contentPadding = padding,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            //region TITEL
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(Res.string.welcome) + ",",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                        Text(
+                            text = user,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                    }
+
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.settings_icon),
+                        contentDescription = stringResource(Res.string.settings),
+                        modifier = Modifier
+                            .clickable { navController.navigate(PageNavigation.Settings) }
                     )
                 }
+            }
+            //endregion
 
-                Icon(
-                    imageVector = vectorResource(Res.drawable.settings_icon),
-                    contentDescription = stringResource(Res.string.settings),
-                    modifier = Modifier
-                        .clickable { navController.navigate(PageNavigation.Settings) }
+            //region STATUS
+            item {
+                StorageStatusCard(
+                    "Skab under trappe",
                 )
             }
-        }
-        //endregion
+            //endregion
 
-        //region STATUS
-        item {
-            StorageStatusCard(
-                "Skab under trappe",
-            )
+            //region EXPIRES SOON
+            item {
+                Text(
+                    text = stringResource(Res.string.expires_next),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                )
+            }
+            items(products) { product ->
+                ProductCard(product)
+            }
+            //endregion
         }
-        //endregion
-
-        //region EXPIRES SOON
-        item {
-            Text(
-                text = stringResource(Res.string.expires_next),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier
-                    .padding(top = 12.dp)
-            )
-        }
-        items(products) { product ->
-            ProductCard(product)
-        }
-        //endregion
     }
 }
 

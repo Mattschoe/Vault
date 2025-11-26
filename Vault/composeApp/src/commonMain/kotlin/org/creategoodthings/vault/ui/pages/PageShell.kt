@@ -11,10 +11,9 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun PageShell(
-    navController: NavHostController,
-    pageContent: @Composable (PaddingValues) -> Unit,
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)? = null,
+    pageContent: @Composable (PaddingValues) -> Unit,
 ) {
     Box(
         modifier = modifier

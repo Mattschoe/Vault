@@ -25,29 +25,17 @@ fun ApplicationNavigationHost(
     ) {
         //Main Screen
         composable<PageNavigation.Home> { backStackEntry ->
-            PageShell(
-                navController,
-                pageContent = { padding ->
-                    HomePage(
-                        modifier = Modifier.padding(padding),
-                        navController = navController
-                    )
-                }
+            HomePage(
+                navController = navController
             )
         }
 
         //Storage
         composable<PageNavigation.Storage> { backStackEntry ->
             val args = backStackEntry.toRoute<PageNavigation.Storage>()
-            PageShell(
-                navController,
-                pageContent = { padding ->
-                    StoragePage(
-                        storageID = args.storageID,
-                        navController = navController,
-                        modifier = Modifier.padding(padding)
-                    )
-                }
+            StoragePage(
+                storageID = args.storageID,
+                navController = navController
             )
         }
 
