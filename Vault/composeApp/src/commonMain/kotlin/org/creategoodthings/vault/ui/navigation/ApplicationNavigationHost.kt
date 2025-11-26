@@ -8,13 +8,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import org.creategoodthings.vault.ui.pages.HomePage
 import org.creategoodthings.vault.ui.pages.PageShell
+import org.creategoodthings.vault.ui.pages.StoragePage
 
 @Composable
 fun ApplicationNavigationHost(
     navController: NavHostController = rememberNavController(),
-    startPageRoute: String = PageNavigation.Home.route
+    startPageRoute: PageNavigation = PageNavigation.Home
 ) {
     NavHost(
         navController = navController,
@@ -22,7 +24,7 @@ fun ApplicationNavigationHost(
         modifier = Modifier.fillMaxSize()
     ) {
         //Main Screen
-        composable(PageNavigation.Home.route) { backStackEntry ->
+        composable<PageNavigation.Home> { backStackEntry ->
             PageShell(
                 navController,
                 pageContent = { padding ->
@@ -35,5 +37,20 @@ fun ApplicationNavigationHost(
         }
 
         //Storage
+        composable<PageNavigation.Storage> { backStackEntry ->
+            val args = backStackEntry.toRoute<PageNavigation.Storage>()
+            PageShell(
+                navController,
+                pageContent = { padding ->
+                    StoragePage(
+                        storageID = args.storageID,
+                        navController = navController,
+                        modifier = Modifier.padding(padding)
+                    )
+                }
+            )
+        }
+
+        //Settings
     }
 }

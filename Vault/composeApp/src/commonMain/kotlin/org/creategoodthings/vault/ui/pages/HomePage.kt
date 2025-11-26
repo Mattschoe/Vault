@@ -111,7 +111,7 @@ fun HomePage(
                     imageVector = vectorResource(Res.drawable.settings_icon),
                     contentDescription = stringResource(Res.string.settings),
                     modifier = Modifier
-                        .clickable { navController.navigate(PageNavigation.Settings.route) }
+                        .clickable { navController.navigate(PageNavigation.Settings) }
                 )
             }
         }

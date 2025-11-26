@@ -1,11 +1,15 @@
 package org.creategoodthings.vault.ui.navigation
 
-sealed class PageNavigation(val route: String) {
-    object Home : PageNavigation("home")
-    object Storage : PageNavigation("storage/{ID}")
-    object Settings : PageNavigation("settings")
+import kotlinx.serialization.Serializable
 
-    companion object {
-        fun createStorageRoute(storageID: String) = "storage/$storageID"
-    }
+@Serializable
+sealed class PageNavigation {
+    @Serializable
+    object Home : PageNavigation()
+
+    @Serializable
+    data class Storage(val storageID: String) : PageNavigation()
+
+    @Serializable
+    object Settings : PageNavigation()
 }
