@@ -23,8 +23,8 @@ import vault.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 @Preview
-fun App() {
+fun App(appContainer: AppContainer) {
     VaultTheme {
-        ApplicationNavigationHost()
+        ApplicationNavigationHost(appContainer)
     }
 }

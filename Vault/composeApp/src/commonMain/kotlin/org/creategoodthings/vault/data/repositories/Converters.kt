@@ -1,4 +1,4 @@
-package org.creategoodthings.vault.data.local
+package org.creategoodthings.vault.data.repositories
 
 import androidx.room.TypeConverter
 import kotlinx.datetime.LocalDate

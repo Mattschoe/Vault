@@ -8,11 +8,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import org.creategoodthings.vault.AppContainer
 import org.creategoodthings.vault.ui.pages.home.HomePage
 import org.creategoodthings.vault.ui.pages.StoragePage
 
 @Composable
 fun ApplicationNavigationHost(
+    appContainer: AppContainer,
     navController: NavHostController = rememberNavController(),
     startPageRoute: PageNavigation = PageNavigation.Home
 ) {

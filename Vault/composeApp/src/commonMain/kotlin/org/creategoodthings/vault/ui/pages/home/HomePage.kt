@@ -68,18 +68,7 @@ fun HomePage(
     navController: NavController
 ) {
     val user = remember { "Matthias" }
-    val products = listOf(
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-        Product("Mælk", LocalDate(2025, 11, 30), 5),
-    )
+    val products = emptyList<Product>()
 
     PageShell(
         floatingActionButton = {

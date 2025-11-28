@@ -10,7 +10,7 @@ import kotlinx.datetime.LocalDate
     tableName = "products",
     foreignKeys = [
         ForeignKey(
-            entity = Storage::class,
+            entity = StorageEntity::class,
             parentColumns = ["ID"],
             childColumns = ["storageID"]
         )
@@ -32,7 +32,7 @@ data class ProductEntity(
 @Entity(
     tableName = "storage"
 )
-data class Storage(
+data class StorageEntity(
     @PrimaryKey val ID: String,
     val name: String,
     val isDirty: Boolean,

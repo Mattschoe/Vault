@@ -8,5 +8,6 @@ import kotlinx.datetime.LocalDate
 data class Product(
     val name: String,
     val expireDate: LocalDate,
-    val daysRemaining: Int
+    val daysRemaining: Int,
+    val bestBefore: LocalDate
 )

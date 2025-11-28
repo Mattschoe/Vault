@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
+import org.creategoodthings.vault.data.repositories.Converters
 
 @Database(
-    entities = [ProductEntity::class, Storage::class],
+    entities = [ProductEntity::class, StorageEntity::class],
     version = 1
 )
 @TypeConverters(Converters::class)
