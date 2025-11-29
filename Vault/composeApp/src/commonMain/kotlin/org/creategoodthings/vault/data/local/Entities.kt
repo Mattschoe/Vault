@@ -13,13 +13,19 @@ import kotlinx.datetime.LocalDate
             entity = StorageEntity::class,
             parentColumns = ["ID"],
             childColumns = ["storageID"]
+        ),
+        ForeignKey(
+            entity = ContainerEntity::class,
+            parentColumns = ["ID"],
+            childColumns = ["containerID"]
         )
     ],
-    indices = [Index(value = ["name"]), Index(value = ["bestBeforeDate"]), Index(value = ["storageID"])]
+    indices = [Index(value = ["name"]), Index(value = ["bestBeforeDate"]), Index(value = ["storageID"]), Index(value = ["containerID"])]
 )
 data class ProductEntity(
     @PrimaryKey val ID: String,
     val storageID: String,
+    val containerID: String?,
     val name: String,
     val description: String,
     val bestBeforeDate: LocalDate,
@@ -33,6 +39,16 @@ data class ProductEntity(
     tableName = "storage"
 )
 data class StorageEntity(
+    @PrimaryKey val ID: String,
+    val name: String,
+    val isDirty: Boolean,
+    val isDeleted: Boolean
+)
+
+@Entity(
+    tableName = "container"
+)
+data class ContainerEntity(
     @PrimaryKey val ID: String,
     val name: String,
     val isDirty: Boolean,

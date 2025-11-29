@@ -22,11 +22,11 @@ interface ProductDao {
     //endregion
 
     //region QUERIES
-    @Query("SELECT * FROM products")
-    fun getAllProducts(): Flow<List<ProductEntity>>
+    @Query("SELECT * FROM products ORDER BY name")
+    fun getAllProductsOrderedByAlphabet(): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM storage JOIN products ON storage.ID = products.storageID")
-    fun getStoragesWithProducts(): Flow<Map<StorageEntity, List<ProductEntity>>>
+    @Query("SELECT * FROM container JOIN products ON container.ID = products.storageID ORDER BY bestBeforeDate")
+    fun getContainersWithProductsOrderedByBB(): Flow<Map<StorageEntity, List<ProductEntity>>>
 
     @Query("SELECT * FROM products ORDER BY bestBeforeDate")
     fun getProductsOrderedByBB(): Flow<List<ProductEntity>>
