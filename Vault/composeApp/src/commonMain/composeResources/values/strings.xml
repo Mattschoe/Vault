@@ -14,4 +14,13 @@
     <string name="expires_the">Expires the</string>
     <string name="edit">Edit</string>
     <string name="add_product">Add product</string>
+    <string name="add_products">Add products</string>
+    <string name="amount">amount</string>
+    <string name="product_name">Product name</string>
+    <string name="description">Description</string>
+    <string name="best_before">Best Before</string>
+    <string name="remind_me">Remind me</string>
+    <string name="before">before</string>
+    <string name="cancel">Cancel</string>
+    <string name="best_before_error">Best Before date can't be before today!</string>
 </resources>
