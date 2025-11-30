@@ -1,9 +1,11 @@
 package org.creategoodthings.vault.data.local
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import kotlinx.datetime.LocalDate
 
 @Entity(
@@ -53,4 +55,13 @@ data class ContainerEntity(
     val name: String,
     val isDirty: Boolean,
     val isDeleted: Boolean
+)
+
+data class StorageWithProductsEntity(
+    @Embedded val storage: StorageEntity,
+    @Relation(
+        parentColumn = "ID",
+        entityColumn = "storageID"
+    )
+    val products: List<ProductEntity>
 )

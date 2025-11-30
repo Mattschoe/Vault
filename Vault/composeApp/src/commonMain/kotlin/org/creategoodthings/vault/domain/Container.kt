@@ -1,5 +1,9 @@
 package org.creategoodthings.vault.domain
 
-data class Container (
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+
+data class Container @OptIn(ExperimentalUuidApi::class) constructor(
+    val ID: String = Uuid.random().toString(),
     val name: String
 )

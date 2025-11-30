@@ -1,16 +1,44 @@
 package org.creategoodthings.vault.domain.repositories
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.until
+import org.creategoodthings.vault.data.local.ContainerEntity
 import org.creategoodthings.vault.data.local.ProductEntity
 import org.creategoodthings.vault.data.local.StorageEntity
+import org.creategoodthings.vault.data.local.StorageWithProductsEntity
+import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
-import kotlin.uuid.ExperimentalUuidApi
+import org.creategoodthings.vault.domain.Storage
 
-@OptIn(ExperimentalUuidApi::class)
 interface ProductRepository {
     suspend fun insertProduct(product: Product)
-    suspend fun getAllProductsOrderedByAlphabet(): Flow<List<ProductEntity>>
-    fun getStorageWithProductsOrderedByBB(): Flow<Map<StorageEntity, List<ProductEntity>>>
-    fun getProductsOrderedByBB(): Flow<List<ProductEntity>>
+    suspend fun insertStorage(storage: Storage)
+    suspend fun insertContainer(container: Container)
+
+    fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts>
+    fun getAllProductsOrderedByAlphabet(): Flow<List<Product>>
+    fun getContainersWithProductsOrderedByBB(): Flow<Map<Container, List<Product>>>
+    fun getStoragesWithProductsOrderedByBB(): Flow<Map<Storage, List<Product>>>
+    fun getProductsOrderedByBB(): Flow<List<Product>>
+}
+
+data class StorageWithProducts(
+    val storage: Storage,
+    val products: List<Product>
+)
+
+fun ProductEntity.toDomain(): Product {
+    return Product(
+        ID = ID,
+        name = name,
+        amount = amount,
+        description = description,
+        storageID = storageID,
+        containerID = containerID,
+        bestBefore = bestBeforeDate,
+        reminderDate = reminderDate,
+        daysRemaining = bestBeforeDate.daysUntil(reminderDate),
+    )
 }
 

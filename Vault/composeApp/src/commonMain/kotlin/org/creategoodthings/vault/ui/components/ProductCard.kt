@@ -61,7 +61,7 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = stringResource(Res.string.expires_the) + " ${product.expireDate}",
+                    text = stringResource(Res.string.expires_the) + " ${product.bestBefore}",
                     color = Color.Gray
                 )
             }

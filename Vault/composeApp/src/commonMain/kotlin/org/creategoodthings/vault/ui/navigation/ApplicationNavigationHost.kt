@@ -3,6 +3,7 @@ package org.creategoodthings.vault.ui.navigation
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -10,7 +11,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import org.creategoodthings.vault.AppContainer
 import org.creategoodthings.vault.ui.pages.home.HomePage
-import org.creategoodthings.vault.ui.pages.StoragePage
+import org.creategoodthings.vault.ui.pages.home.HomePageViewModel
+import org.creategoodthings.vault.ui.pages.storage.StoragePage
 
 @Composable
 fun ApplicationNavigationHost(
@@ -25,8 +27,12 @@ fun ApplicationNavigationHost(
     ) {
         //Main Screen
         composable<PageNavigation.Home> { backStackEntry ->
+            val viewModel = viewModel<HomePageViewModel> {
+                HomePageViewModel(appContainer.productRepo)
+            }
             HomePage(
-                navController = navController
+                navController = navController,
+                viewModel = viewModel
             )
         }
 
