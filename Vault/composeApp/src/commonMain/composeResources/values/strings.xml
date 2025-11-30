@@ -23,4 +23,6 @@
     <string name="before">before</string>
     <string name="cancel">Cancel</string>
     <string name="best_before_error">Best Before date can't be before today!</string>
+    <string name="storage">Storage</string>
+    <string name="container">Container</string>
 </resources>

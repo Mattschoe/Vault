@@ -42,9 +42,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.datetime.LocalDate
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.navigation.PageNavigation
@@ -65,15 +67,18 @@ import kotlin.math.min
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    viewModel: HomePageViewModel
 ) {
     val user = remember { "Matthias" }
     val products = emptyList<Product>()
+    var showAddProductDialog by remember { mutableStateOf(false) }
 
+    //region PAGESHELL UI
     PageShell(
         floatingActionButton = {
             AddProductFAB(
-                onClick = { }
+                onClick = { showAddProductDialog = true }
             )
         },
         modifier = modifier,
@@ -141,6 +146,21 @@ fun HomePage(
             //endregion
         }
     }
+    //endregion
+
+    //region DIALOGS
+    if (showAddProductDialog) {
+        AddProductDialog(
+            onClick = {
+                viewModel.insertProduct(it)
+                showAddProductDialog = false
+            },
+            onDismiss = { showAddProductDialog = false },
+            emptyList(),
+            emptyList()
+        )
+    }
+    //endregion
 }
 
 @Composable
