@@ -48,10 +48,19 @@ data class StorageEntity(
 )
 
 @Entity(
-    tableName = "container"
+    tableName = "container",
+    foreignKeys = [
+        ForeignKey(
+            entity = StorageEntity::class,
+            parentColumns = ["ID"],
+            childColumns = ["storageID"]
+        ),
+    ],
+    indices = [Index(value = ["storageID"])]
 )
 data class ContainerEntity(
     @PrimaryKey val ID: String,
+    val storageID: String,
     val name: String,
     val isDirty: Boolean,
     val isDeleted: Boolean

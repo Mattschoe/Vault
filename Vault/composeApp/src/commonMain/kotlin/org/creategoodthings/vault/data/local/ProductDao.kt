@@ -29,6 +29,9 @@ interface ProductDao {
     //endregion
 
     //region QUERIES
+    @Query("SELECT * FROM storage LEFT JOIN container ON storage.ID = container.storageID")
+    fun getStoragesWithContainersShell(): Flow<Map<StorageEntity, List<ContainerEntity>>>
+
     @Transaction
     @Query("SELECT * FROM storage WHERE ID = :storageID")
     fun getStorageWithProducts(storageID: String): Flow<StorageWithProductsEntity>

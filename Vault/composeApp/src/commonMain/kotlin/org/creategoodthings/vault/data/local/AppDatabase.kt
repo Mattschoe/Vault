@@ -9,7 +9,7 @@ import org.creategoodthings.vault.data.repositories.Converters
 
 @Database(
     entities = [ProductEntity::class, StorageEntity::class, ContainerEntity::class],
-    version = 2
+    version = 3
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
