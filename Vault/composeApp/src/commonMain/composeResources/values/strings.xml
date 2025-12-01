@@ -25,4 +25,7 @@
     <string name="best_before_error">Best Before date can't be before today!</string>
     <string name="storage">Storage</string>
     <string name="container">Container</string>
+    <string name="add_storage">Add storage</string>
+    <string name="add_container">Add container</string>
+    <string name="storage_name">Storage name</string>
 </resources>

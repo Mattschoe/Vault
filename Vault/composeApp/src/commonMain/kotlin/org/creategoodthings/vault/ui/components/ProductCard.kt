@@ -18,7 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.daysUntil
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import vault.composeapp.generated.resources.Res
@@ -30,11 +32,12 @@ import vault.composeapp.generated.resources.weeks
 @Composable
 fun ProductCard(product: Product, modifier: Modifier = Modifier) {
     //Formats the amount of days remaining into days, weeks and months
+    val days = product.calculateDaysRemaining()
     val daysRemaining = when {
-        product.daysRemaining < 7 -> "${product.daysRemaining} ${stringResource(Res.string.days)}"
-        product.daysRemaining < 30 -> "${product.daysRemaining/7} ${stringResource(Res.string.weeks)}"
-        product.daysRemaining < 365 -> "${product.daysRemaining/30} ${stringResource(Res.string.months)}" //Every month is 30 now, but oh well
-        else -> ">${product.daysRemaining/365} ${stringResource(Res.string.months)}"
+        days < 7 -> "$days ${stringResource(Res.string.days)}"
+        days < 30 -> "${days/7} ${stringResource(Res.string.weeks)}"
+        days < 365 -> "${days/30} ${stringResource(Res.string.months)}" //Every month is 30 now, but oh well
+        else -> ">${days/365} ${stringResource(Res.string.months)}"
     }
 
     Card(

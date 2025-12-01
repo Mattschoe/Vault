@@ -41,10 +41,30 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     override suspend fun insertContainer(container: Container) {
         dao.insertContainer(ContainerEntity(
             ID = container.ID,
+            storageID = container.storageID,
             name = container.name,
             isDirty = true,
             isDeleted = false
         ))
+    }
+
+    override fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>> {
+        return dao.getStoragesWithContainersShell().map { entity ->
+            entity.map { (storageEntity, containersEntity) ->
+                val storage = Storage(
+                    ID = storageEntity.ID,
+                    name = storageEntity.name
+                )
+                val containers = containersEntity.map {
+                    Container(
+                        ID = it.ID,
+                        storageID = it.storageID,
+                        name = it.name
+                    )
+                }
+                storage to containers
+            }.toMap()
+        }
     }
 
     override fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts> {
@@ -70,6 +90,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
             entity.map { (containerEntity, productsEntity) ->
                 val container = Container(
                     ID = containerEntity.ID,
+                    storageID = containerEntity.storageID,
                     name = containerEntity.name
                 )
                 val products = productsEntity.map { it.toDomain() }

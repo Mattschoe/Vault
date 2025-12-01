@@ -1,6 +1,11 @@
 package org.creategoodthings.vault.domain
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -13,8 +18,14 @@ data class Product @OptIn(ExperimentalUuidApi::class) constructor(
     val amount: Int,
     val description: String,
     val storageID: String,
-    val containerID: String?,
+    val containerID: String? = null,
     val bestBefore: LocalDate,
     val reminderDate: LocalDate,
-    val daysRemaining: Int
 )
+
+@OptIn(ExperimentalTime::class)
+fun Product.calculateDaysRemaining(): Int {
+    val timeZone = TimeZone.currentSystemDefault()
+    val today = Clock.System.todayIn(timeZone)
+    return today.daysUntil(bestBefore)
+}

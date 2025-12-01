@@ -55,13 +55,17 @@ import org.creategoodthings.vault.ui.components.RemindMeType.YEARS
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
+import vault.composeapp.generated.resources.add_container
+import vault.composeapp.generated.resources.add_icon
 import vault.composeapp.generated.resources.add_products
+import vault.composeapp.generated.resources.add_storage
 import vault.composeapp.generated.resources.allStringResources
 import vault.composeapp.generated.resources.amount
 import vault.composeapp.generated.resources.best_before
 import vault.composeapp.generated.resources.best_before_error
 import vault.composeapp.generated.resources.calendar_icon
 import vault.composeapp.generated.resources.cancel
+import vault.composeapp.generated.resources.container
 import vault.composeapp.generated.resources.days
 import vault.composeapp.generated.resources.description
 import vault.composeapp.generated.resources.dropdown_closed_icon
@@ -71,6 +75,7 @@ import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.product_name
 import vault.composeapp.generated.resources.remind_me
 import vault.composeapp.generated.resources.storage
+import vault.composeapp.generated.resources.storage_name
 import vault.composeapp.generated.resources.weeks
 import vault.composeapp.generated.resources.years
 import kotlin.time.Clock
@@ -80,10 +85,12 @@ import kotlin.time.Instant
 fun AddProductDialog(
     onClick: (Product) -> Unit,
     onDismiss: () -> Unit,
-    storages: List<Storage>,
-    containers: List<Container>
+    storage2Containers: Map<Storage, List<Container>>,
+    onAddStorage: (Storage) -> Unit,
 ) {
     val spacingBetweenSections = 6.dp
+    var showAddStorage by remember { mutableStateOf(false) }
+    var showAddContainer by remember { mutableStateOf(false) }
 
     var showRemindMePicker by remember { mutableStateOf(false) }
     var remindMeType by remember { mutableStateOf(WEEKS) }
@@ -94,7 +101,6 @@ fun AddProductDialog(
 
     var showStoragePicker by remember { mutableStateOf(false) }
     var storage: Storage? by remember { mutableStateOf(null) }
-    var showContainerPicker by remember { mutableStateOf(false) }
     var container: Container? by remember { mutableStateOf(null) }
     var amount by remember { mutableStateOf("") }
     var productName by remember { mutableStateOf("") }
@@ -107,12 +113,9 @@ fun AddProductDialog(
         amount.toIntOrNull().let { true } &&
         productName.trim().isNotEmpty() &&
         bestBefore?.isAfterToday() ?: false &&
-        remindMeDate != null
+        remindMeDate != null &&
+        storage != null
 
-    println(amount.toIntOrNull().let { true })
-    println(productName.trim().isNotEmpty())
-    println(bestBefore?.isAfterToday() ?: false)
-    println(remindMeDate != null)
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -251,7 +254,7 @@ fun AddProductDialog(
                             expanded = showStoragePicker,
                             onDismissRequest = { showStoragePicker = false }
                         ) {
-                            storages.forEach {
+                            storage2Containers.keys.forEach {
                                 DropdownMenuItem(
                                     text = { Text(it.name) },
                                     onClick = {
@@ -260,6 +263,18 @@ fun AddProductDialog(
                                     }
                                 )
                             }
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.add_storage)) },
+                                onClick = {
+                                    showStoragePicker = false
+                                    showAddStorage = true
+                                },
+                                trailingIcon = { Icon(
+                                    vectorResource(Res.drawable.add_icon),
+                                    stringResource(Res.string.add_storage))
+                                }
+                            )
                         }
 
                         Box(
@@ -270,15 +285,17 @@ fun AddProductDialog(
                     }
                 }
                 //endregion
+                //TODO ERROR MESSAGE IF STORAGE IS NULL (or communicate better that this is mandatory)
                 Spacer(Modifier.height(spacingBetweenSections))
                 //region CONTAINER
+                /*
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(Res.string.storage),
+                        text = stringResource(Res.string.container),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -314,6 +331,15 @@ fun AddProductDialog(
                                     }
                                 )
                             }
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.add_container)) },
+                                onClick = { showAddContainer = true },
+                                trailingIcon = { Icon(
+                                    vectorResource(Res.drawable.add_icon),
+                                    stringResource(Res.string.add_container))
+                                }
+                            )
                         }
 
                         Box(
@@ -323,6 +349,7 @@ fun AddProductDialog(
                         )
                     }
                 }
+                 */
                 //endregion
                 Spacer(Modifier.height(spacingBetweenSections))
                 //region REMINDER
@@ -408,7 +435,19 @@ fun AddProductDialog(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clickable {
-
+                                if (isValid) {
+                                    run {
+                                        onClick(Product(
+                                            name = productName,
+                                            amount = amount.toInt(),
+                                            description = description,
+                                            storageID = storage!!.ID,
+                                            containerID = container?.ID,
+                                            bestBefore = bestBefore,
+                                            reminderDate = remindMeDate,
+                                        ))
+                                    }
+                                }
                             }
                     )
                 }
@@ -438,7 +477,75 @@ fun AddProductDialog(
             DatePicker(state = datePickerState)
         }
     }
+
+    if (showAddStorage) {
+        AddStorageDialog(
+            onConfirm = {
+                onAddStorage(it)
+                storage = it
+                showAddStorage = false
+            },
+            onDismiss = { showAddStorage = false }
+        )
+    }
     //endregion
+}
+
+@Composable
+fun AddStorageDialog(onConfirm: (Storage) -> Unit, onDismiss: () -> Unit) {
+    var storageName by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier.padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            shadowElevation = 6.dp,
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                //TITLE
+                Text(
+                    text = stringResource(Res.string.add_storage),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(6.dp))
+                DialogOutlinedTextField(
+                    value = storageName,
+                    onValueChange = { storageName = it },
+                    placeholder = stringResource(Res.string.storage_name),
+                )
+                Spacer(Modifier.height(18.dp))
+                //region OK + CANCEL
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.cancel),
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onDismiss() }
+                    )
+                    Text(
+                        text = stringResource(Res.string.ok),
+                        color = if (storageName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onConfirm(Storage(name = storageName)) }
+                    )
+                }
+                //endregion
+            }
+        }
+    }
 }
 
 @Composable

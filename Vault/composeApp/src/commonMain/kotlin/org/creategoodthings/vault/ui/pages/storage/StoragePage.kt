@@ -1,4 +1,4 @@
-package org.creategoodthings.vault.ui.pages
+package org.creategoodthings.vault.ui.pages.storage
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
+import org.creategoodthings.vault.ui.pages.PageShell
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res

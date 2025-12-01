@@ -1,12 +1,7 @@
 package org.creategoodthings.vault.domain.repositories
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.daysUntil
-import kotlinx.datetime.until
-import org.creategoodthings.vault.data.local.ContainerEntity
 import org.creategoodthings.vault.data.local.ProductEntity
-import org.creategoodthings.vault.data.local.StorageEntity
-import org.creategoodthings.vault.data.local.StorageWithProductsEntity
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
@@ -16,6 +11,7 @@ interface ProductRepository {
     suspend fun insertStorage(storage: Storage)
     suspend fun insertContainer(container: Container)
 
+    fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
     fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts>
     fun getAllProductsOrderedByAlphabet(): Flow<List<Product>>
     fun getContainersWithProductsOrderedByBB(): Flow<Map<Container, List<Product>>>
@@ -38,7 +34,6 @@ fun ProductEntity.toDomain(): Product {
         containerID = containerID,
         bestBefore = bestBeforeDate,
         reminderDate = reminderDate,
-        daysRemaining = bestBeforeDate.daysUntil(reminderDate),
     )
 }
 

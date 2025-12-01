@@ -23,9 +23,14 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
     )
+    val storages = _productRepo.getStoragesWithContainersShell().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyMap()
+    )
 
     private val _selectedStorageID = MutableStateFlow<String?>(null)
-    val storage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
+    val selectedStorage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
         if (ID == null) {
             flowOf(StorageUIState.NoneSelected)
         } else {
@@ -48,6 +53,12 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
 
     fun changeStorage(newStorage: Storage) {
         _selectedStorageID.value = newStorage.name
+    }
+
+    fun addStorage(storage: Storage) {
+        viewModelScope.launch {
+            _productRepo.insertStorage(storage)
+        }
     }
 }
 

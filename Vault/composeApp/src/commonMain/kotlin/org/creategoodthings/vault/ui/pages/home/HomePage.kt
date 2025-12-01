@@ -22,6 +22,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,10 +46,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import kotlinx.datetime.LocalDate
-import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.ProductCard
@@ -55,8 +56,10 @@ import org.creategoodthings.vault.ui.pages.PageShell
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
+import vault.composeapp.generated.resources.add_storage
 import vault.composeapp.generated.resources.choose_storage
 import vault.composeapp.generated.resources.dropdown_closed_icon
+import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.expires_next
 import vault.composeapp.generated.resources.products
 import vault.composeapp.generated.resources.settings
@@ -64,6 +67,8 @@ import vault.composeapp.generated.resources.settings_icon
 import vault.composeapp.generated.resources.total
 import vault.composeapp.generated.resources.welcome
 import kotlin.math.min
+import org.creategoodthings.vault.ui.pages.home.StorageUIState.*
+import vault.composeapp.generated.resources.add_icon
 
 @Composable
 fun HomePage(
@@ -73,7 +78,8 @@ fun HomePage(
 ) {
     val user = remember { "Matthias" }
     val products by viewModel.products.collectAsState()
-    val storage by viewModel.storage.collectAsState()
+    val storage2Containers by viewModel.storages.collectAsState()
+    val selectedStorage by viewModel.selectedStorage.collectAsState()
     var showAddProductDialog by remember { mutableStateOf(false) }
 
     //region PAGESHELL UI
@@ -126,7 +132,9 @@ fun HomePage(
             //region STATUS
             item {
                 StorageStatusCard(
-                    "Skab under trappe",
+                    uiState = selectedStorage,
+                    storages = storage2Containers.keys.toList(),
+                    onStorageChosen = { viewModel.changeStorage(it) }
                 )
             }
             //endregion
@@ -158,8 +166,8 @@ fun HomePage(
                 showAddProductDialog = false
             },
             onDismiss = { showAddProductDialog = false },
-            emptyList(),
-            emptyList()
+            storage2Containers = storage2Containers,
+            onAddStorage = { viewModel.addStorage(it) },
         )
     }
     //endregion
@@ -167,9 +175,17 @@ fun HomePage(
 
 @Composable
 fun StorageStatusCard(
-    selectedStorage: String,
+    uiState: StorageUIState,
+    storages: List<Storage>,
+    onStorageChosen: (Storage) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var chosenStorageName by remember { mutableStateOf("") }
+    when (uiState) {
+        Loading -> CircularProgressIndicator()
+        NoneSelected -> { chosenStorageName = stringResource(Res.string.add_storage) }
+        is Success -> { chosenStorageName = uiState.data.storage.name }
+    }
     var chooseStorageExpanded by remember { mutableStateOf(false) }
 
     Card(
@@ -196,19 +212,35 @@ fun StorageStatusCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(24.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .clickable { chooseStorageExpanded = true }
+                            .clickable { chooseStorageExpanded = !chooseStorageExpanded }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = selectedStorage,
+                            text = chosenStorageName,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.weight(1f, false)
                         )
                         Icon(
-                            vectorResource(Res.drawable.dropdown_closed_icon),
+                            if (uiState is NoneSelected) vectorResource(Res.drawable.add_icon)
+                            else if (chooseStorageExpanded) vectorResource(Res.drawable.dropdown_open_icon)
+                            else vectorResource(Res.drawable.dropdown_closed_icon),
                             contentDescription = stringResource(Res.string.choose_storage),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
+                    }
+                    DropdownMenu(
+                        expanded = chooseStorageExpanded,
+                        onDismissRequest = { chooseStorageExpanded = false }
+                    ) {
+                        storages.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it.name) },
+                                onClick = {
+                                    onStorageChosen(it)
+                                    chooseStorageExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
