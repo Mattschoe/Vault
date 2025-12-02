@@ -50,6 +50,7 @@ import androidx.navigation.NavController
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
+import org.creategoodthings.vault.ui.components.AddStorageDialog
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.navigation.PageNavigation
 import org.creategoodthings.vault.ui.pages.PageShell
@@ -134,7 +135,10 @@ fun HomePage(
                 StorageStatusCard(
                     uiState = selectedStorage,
                     storages = storage2Containers.keys.toList(),
-                    onStorageChosen = { viewModel.changeStorage(it) }
+                    onStorageChosen = { viewModel.changeStorage(it) },
+                    onStorageAdded = {
+                        viewModel.addAndChangeToStorage(it)
+                    }
                 )
             }
             //endregion
@@ -178,6 +182,7 @@ fun StorageStatusCard(
     uiState: StorageUIState,
     storages: List<Storage>,
     onStorageChosen: (Storage) -> Unit,
+    onStorageAdded: (Storage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var chosenStorageName by remember { mutableStateOf("") }
@@ -187,6 +192,7 @@ fun StorageStatusCard(
         is Success -> { chosenStorageName = uiState.data.storage.name }
     }
     var chooseStorageExpanded by remember { mutableStateOf(false) }
+    var showAddStorageDialog by remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -212,7 +218,7 @@ fun StorageStatusCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(24.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .clickable { chooseStorageExpanded = !chooseStorageExpanded }
+                            .clickable { if (uiState is Success) chooseStorageExpanded = !chooseStorageExpanded else showAddStorageDialog = true }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
@@ -260,6 +266,20 @@ fun StorageStatusCard(
             //endregion
         }
     }
+
+    //region DIALOGS
+    if (showAddStorageDialog) {
+        AddStorageDialog(
+            onConfirm = {
+                onStorageAdded(it)
+                showAddStorageDialog = false
+            },
+            onDismiss = {
+                showAddStorageDialog = false
+            }
+        )
+    }
+    //endregion
 }
 
 data class StatusInfo(

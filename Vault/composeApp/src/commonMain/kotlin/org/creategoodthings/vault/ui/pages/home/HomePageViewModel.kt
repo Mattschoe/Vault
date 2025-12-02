@@ -29,7 +29,7 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
         initialValue = emptyMap()
     )
 
-    private val _selectedStorageID = MutableStateFlow<String?>(null)
+    private val _selectedStorageID = MutableStateFlow<String?>(null)    
     val selectedStorage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
         if (ID == null) {
             flowOf(StorageUIState.NoneSelected)
@@ -58,6 +58,16 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
     fun addStorage(storage: Storage) {
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
+        }
+    }
+
+    /**
+     * Adds the storage to the DB and then changes the selectedStorage to the new storage
+     */
+    fun addAndChangeToStorage(storage: Storage) {
+        viewModelScope.launch {
+            _productRepo.insertStorage(storage)
+            _selectedStorageID.value = storage.ID
         }
     }
 }
