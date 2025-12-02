@@ -11,8 +11,10 @@ fun MainViewController() = ComposeUIViewController {
         val dbInstance = builder
             .setDriver(BundledSQLiteDriver())
             .build()
-
-        AppContainer(database = dbInstance)
+        AppContainer(
+            database = dbInstance,
+            dataStore = createDataStore()
+        )
     }
 
     App(appContainer)

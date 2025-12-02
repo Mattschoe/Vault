@@ -28,7 +28,7 @@ fun ApplicationNavigationHost(
         //Main Screen
         composable<PageNavigation.Home> { backStackEntry ->
             val viewModel = viewModel<HomePageViewModel> {
-                HomePageViewModel(appContainer.productRepo)
+                HomePageViewModel(appContainer.productRepo, appContainer.preferencesRepository)
             }
             HomePage(
                 navController = navController,

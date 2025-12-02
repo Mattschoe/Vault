@@ -17,7 +17,12 @@ class MainActivity : ComponentActivity() {
         val dbInstance = builder
             .setDriver(BundledSQLiteDriver())
             .build()
-        val appContainer = AppContainer(database = dbInstance)
+        val dataStore = createDataStore(this)
+
+        val appContainer = AppContainer(
+            database = dbInstance,
+            dataStore = dataStore
+        )
 
         setContent {
             App(appContainer)

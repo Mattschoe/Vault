@@ -13,11 +13,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.repositories.StorageWithProducts
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel() {
+class HomePageViewModel(
+    private val _productRepo: ProductRepository,
+    private val _preferencesRepo: PreferencesRepository
+): ViewModel() {
     val products = _productRepo.getProductsOrderedByBB().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -29,7 +33,7 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
         initialValue = emptyMap()
     )
 
-    private val _selectedStorageID = MutableStateFlow<String?>(null)    
+    private val _selectedStorageID = _preferencesRepo.standardStorageID
     val selectedStorage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
         if (ID == null) {
             flowOf(StorageUIState.NoneSelected)
@@ -52,22 +56,15 @@ class HomePageViewModel(private val _productRepo: ProductRepository): ViewModel(
     }
 
     fun changeStorage(newStorage: Storage) {
-        _selectedStorageID.value = newStorage.name
-    }
-
-    fun addStorage(storage: Storage) {
         viewModelScope.launch {
-            _productRepo.insertStorage(storage)
+            _preferencesRepo.setStandardStorageID(newStorage.ID)
         }
     }
 
-    /**
-     * Adds the storage to the DB and then changes the selectedStorage to the new storage
-     */
-    fun addAndChangeToStorage(storage: Storage) {
+    fun addStorage(storage: Storage, changeToStore: Boolean = false) {
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
-            _selectedStorageID.value = storage.ID
+            if (changeToStore) _preferencesRepo.setStandardStorageID(storage.ID)
         }
     }
 }

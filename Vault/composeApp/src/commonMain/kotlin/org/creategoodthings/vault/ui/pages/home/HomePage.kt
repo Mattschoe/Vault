@@ -137,7 +137,7 @@ fun HomePage(
                     storages = storage2Containers.keys.toList(),
                     onStorageChosen = { viewModel.changeStorage(it) },
                     onStorageAdded = {
-                        viewModel.addAndChangeToStorage(it)
+                        viewModel.addStorage(it, true)
                     }
                 )
             }
