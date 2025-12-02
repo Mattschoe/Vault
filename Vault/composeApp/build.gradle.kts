@@ -47,10 +47,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
 
-                // Room
+                // Room/DataStore
                 implementation(libs.androidx.room.runtime)
                 implementation(libs.androidx.sqlite.bundled)
-
+                api(libs.datastore.preferences)
+                api(libs.datastore)
             }
             commonTest.dependencies {
                 implementation(libs.kotlin.test)
