@@ -43,11 +43,16 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.AddStorageDialog
@@ -70,6 +75,9 @@ import vault.composeapp.generated.resources.welcome
 import kotlin.math.min
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.*
 import vault.composeapp.generated.resources.add_icon
+import vault.composeapp.generated.resources.check_circle_icon
+import vault.composeapp.generated.resources.check_icon
+import vault.composeapp.generated.resources.ok
 
 @Composable
 fun HomePage(
@@ -202,9 +210,7 @@ fun StorageStatusCard(
         modifier = modifier
             .fillMaxWidth()
     ) {
-        Column(
-
-        ) {
+        Column {
             //region CHOOSE STORAGE
             Row(
                 modifier = Modifier
@@ -253,16 +259,7 @@ fun StorageStatusCard(
             //endregion
 
             //region STATUS CHART
-            val infos = listOf(
-                StatusInfo(StatusInfo.Category.SOON, MaterialTheme.colorScheme.secondary, 5),
-                StatusInfo(StatusInfo.Category.EXPIRED, Color.Red, 2),
-                StatusInfo(StatusInfo.Category.FRESH, MaterialTheme.colorScheme.tertiary, 12),
-            )
-            StatusChart(
-                data = infos,
-                totalAmount = 19,
-                centerItem = infos[2],
-            )
+            StatusChart(uiState = uiState)
             //endregion
         }
     }
@@ -282,142 +279,167 @@ fun StorageStatusCard(
     //endregion
 }
 
-data class StatusInfo(
-    val category: Category,
-    val color: Color,
-    val amount: Int
-) {
-    enum class Category {
-        EXPIRED,
-        SOON,
-        FRESH
-    }
-}
-
-data class ChartSlice(
-    val info: StatusInfo,
-    val startAngle: Float,
-    val sweepAngle: Float
-)
-
 @Composable
 fun StatusChart(
-    data: List<StatusInfo>,
-    totalAmount: Int,
-    centerItem: StatusInfo,
+    uiState: StorageUIState,
     modifier: Modifier = Modifier,
     chartThickness: Dp = 30.dp,
     animationDuration: Int = 1000
 ) {
-    val animationProgress = remember { Animatable(0f) }
-    LaunchedEffect(data) {
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = animationDuration,
-                easing = FastOutSlowInEasing
-            )
-        )
-    }
+    when (uiState) {
+        Loading -> { CircularProgressIndicator() }
+        NoneSelected -> {
 
-    val chartData = remember(data, totalAmount) {
-        var currentStartAngle = -90f //Starts at 12
-        data.map { info ->
-            val sweepAngle = if (totalAmount > 0) {
-                (info.amount.toFloat() / totalAmount.toFloat()) * 360f
-            } else 0f
-
-            val slice = ChartSlice(
-                info = info,
-                startAngle = currentStartAngle,
-                sweepAngle = sweepAngle
-            )
-            currentStartAngle += sweepAngle
-            slice
         }
-    }
+        is Success -> {
+            val totalAmount = uiState.data.products.size
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth(0.6f)
-                .aspectRatio(1f)
-        ) {
-            Canvas(
-                modifier = Modifier.matchParentSize()
-            ) {
-                val currentMaxAngle = 360f * animationProgress.value //Amount of degrees visible based on animationprogress
-                chartData.forEach { slice ->
-                    val sliceStartRelative = slice.startAngle + 90f
-                    //Only draws when animation curser has reached slice
-                    if (currentMaxAngle > sliceStartRelative) {
-                        val visibleSweep = min(
-                            slice.sweepAngle,
-                            currentMaxAngle - sliceStartRelative
-                        )
+            val categoryCounts = uiState.data.products
+                .groupingBy { getStatusLevelForItem(it) }
+                .eachCount()
 
-                        val strokeWidthPx = chartThickness.toPx()
-                        val halfStroke = strokeWidthPx / 2f
+            val infos = categoryCounts.map { (category, count) ->
+                val color = when (category) {
+                    StatusInfo.Category.EXPIRED -> Color.Red
+                    StatusInfo.Category.SOON -> MaterialTheme.colorScheme.secondary
+                    StatusInfo.Category.FRESH -> MaterialTheme.colorScheme.tertiary
+                }
 
-                        drawArc(
-                            color = slice.info.color,
-                            startAngle = slice.startAngle,
-                            sweepAngle = visibleSweep,
-                            useCenter = false,
-                            topLeft = Offset(halfStroke, halfStroke),
-                            size = Size(
-                                width = size.width - strokeWidthPx,
-                                height = size.height - strokeWidthPx
-                            ),
-                            style = Stroke(width = chartThickness.toPx(), cap = StrokeCap.Butt)
-                        )
-                    }
+                StatusInfo(
+                    category = category,
+                    color = color,
+                    amount = count
+                )
+            }
+
+            val animationProgress = remember { Animatable(0f) }
+            LaunchedEffect(uiState) {
+                animationProgress.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(
+                        durationMillis = animationDuration,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            }
+
+            val chartData = remember(infos, totalAmount) {
+                var currentStartAngle = -90f //Starts at 12
+                infos.map { info ->
+                    val sweepAngle = if (totalAmount > 0) {
+                        (info.amount.toFloat() / totalAmount.toFloat()) * 360f
+                    } else 0f
+
+                    val slice = ChartSlice(
+                        info = info,
+                        startAngle = currentStartAngle,
+                        sweepAngle = sweepAngle
+                    )
+                    currentStartAngle += sweepAngle
+                    slice
                 }
             }
 
             Column(
+                modifier = modifier
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = centerItem.amount.toString(),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = centerItem.color,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = centerItem.category.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.DarkGray,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        Spacer(Modifier.height(24.dp))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .aspectRatio(1f)
+                ) {
+                    Canvas(
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        val currentMaxAngle = 360f * animationProgress.value //Amount of degrees visible based on animationprogress
+                        chartData.forEach { slice ->
+                            val sliceStartRelative = slice.startAngle + 90f
+                            //Only draws when animation curser has reached slice
+                            if (currentMaxAngle > sliceStartRelative) {
+                                val visibleSweep = min(
+                                    slice.sweepAngle,
+                                    currentMaxAngle - sliceStartRelative
+                                )
 
-        Row(
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            data.forEach {
-                ChartLegend(
-                    color = it.color,
-                    label = it.category.toString(),
-                    subLabel = "${it.amount} " + stringResource(Res.string.products)
-                )
-            }
+                                val strokeWidthPx = chartThickness.toPx()
+                                val halfStroke = strokeWidthPx / 2f
 
-            ChartLegend(
-                color = MaterialTheme.colorScheme.primary,
-                label = stringResource(Res.string.total),
-                subLabel = "$totalAmount " + stringResource(Res.string.products)
-            )
+                                drawArc(
+                                    color = slice.info.color,
+                                    startAngle = slice.startAngle,
+                                    sweepAngle = visibleSweep,
+                                    useCenter = false,
+                                    topLeft = Offset(halfStroke, halfStroke),
+                                    size = Size(
+                                        width = size.width - strokeWidthPx,
+                                        height = size.height - strokeWidthPx
+                                    ),
+                                    style = Stroke(width = chartThickness.toPx(), cap = StrokeCap.Butt)
+                                )
+                            }
+                        }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val centerItem: StatusInfo? =
+                            infos.find { it.category == StatusInfo.Category.EXPIRED }
+                            ?: infos.find { it.category == StatusInfo.Category.SOON }
+
+
+                        if (centerItem != null) {
+                            Text(
+                                text = centerItem.amount.toString(),
+                                style = MaterialTheme.typography.displayMedium,
+                                color = centerItem.color,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = centerItem.category.toString(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.DarkGray,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.check_icon),
+                                contentDescription = stringResource(Res.string.ok),
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier
+                                    .size(144.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    infos.forEach {
+                        ChartLegend(
+                            color = it.color,
+                            label = it.category.toString(),
+                            subLabel = "${it.amount} " + stringResource(Res.string.products)
+                        )
+                    }
+
+                    if (totalAmount > 0) {
+                        ChartLegend(
+                            color = MaterialTheme.colorScheme.primary,
+                            label = stringResource(Res.string.total),
+                            subLabel = "$totalAmount " + stringResource(Res.string.products)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -451,4 +473,37 @@ fun ChartLegend(
         )
     }
 }
+
+data class StatusInfo(
+    val category: Category,
+    val color: Color,
+    val amount: Int
+) {
+    enum class Category {
+        EXPIRED,
+        SOON,
+        FRESH;
+
+        override fun toString(): String {
+            return super.toString().lowercase().capitalize(Locale.current)
+        }
+    }
+}
+
+data class ChartSlice(
+    val info: StatusInfo,
+    val startAngle: Float,
+    val sweepAngle: Float
+)
+
+fun getStatusLevelForItem(product: Product): StatusInfo.Category {
+    //TODO Add ability for user to choose the logic for when stuff should count as Expired, Soon and the others.
+    val daysRemaining = product.calculateDaysRemaining()
+    return when {
+        daysRemaining < 0 -> StatusInfo.Category.EXPIRED
+        daysRemaining < 30 -> StatusInfo.Category.SOON
+        else -> StatusInfo.Category.FRESH
+    }
+}
+
 

@@ -34,7 +34,7 @@ interface ProductDao {
 
     @Transaction
     @Query("SELECT * FROM storage WHERE ID = :storageID")
-    fun getStorageWithProducts(storageID: String): Flow<StorageWithProductsEntity>
+    fun getStorageWithProducts(storageID: String): Flow<StorageWithProductsEntity?>
 
     @Query("SELECT * FROM products ORDER BY name")
     fun getAllProductsOrderedByAlphabet(): Flow<List<ProductEntity>>

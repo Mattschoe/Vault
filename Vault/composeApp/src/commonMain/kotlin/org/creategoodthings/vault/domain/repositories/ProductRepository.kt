@@ -12,7 +12,7 @@ interface ProductRepository {
     suspend fun insertContainer(container: Container)
 
     fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
-    fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts>
+    fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?>
     fun getAllProductsOrderedByAlphabet(): Flow<List<Product>>
     fun getContainersWithProductsOrderedByBB(): Flow<Map<Container, List<Product>>>
     fun getStoragesWithProductsOrderedByBB(): Flow<Map<Storage, List<Product>>>

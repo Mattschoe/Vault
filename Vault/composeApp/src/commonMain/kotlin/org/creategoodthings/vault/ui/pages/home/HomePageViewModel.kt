@@ -39,7 +39,8 @@ class HomePageViewModel(
             flowOf(StorageUIState.NoneSelected)
         } else {
             _productRepo.getStorageWithProducts(ID).map {
-                StorageUIState.Success(it)
+                if (it != null) StorageUIState.Success(it)
+                else StorageUIState.NoneSelected
             }
         }
     }.stateIn(

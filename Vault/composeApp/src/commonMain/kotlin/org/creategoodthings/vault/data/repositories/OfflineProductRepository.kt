@@ -67,15 +67,17 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         }
     }
 
-    override fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts> {
+    override fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?> {
         return dao.getStorageWithProducts(storageID).map { entity ->
-            StorageWithProducts(
-                storage = Storage(
-                    ID = entity.storage.ID,
-                    name = entity.storage.name
-                ),
-                products = entity.products.map { it.toDomain() }
-            )
+            entity?.let {
+                StorageWithProducts(
+                    storage = Storage(
+                        ID = entity.storage.ID,
+                        name = entity.storage.name
+                    ),
+                    products = entity.products.map { it.toDomain() }
+                )
+            }
         }
     }
 
