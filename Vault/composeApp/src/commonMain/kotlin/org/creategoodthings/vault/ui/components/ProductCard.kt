@@ -1,6 +1,5 @@
 package org.creategoodthings.vault.ui.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month.*
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.creategoodthings.vault.ui.theme.MustardContainer
@@ -29,8 +30,19 @@ import org.jetbrains.compose.resources.stringResource
 import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.days
 import vault.composeapp.generated.resources.expired
-import vault.composeapp.generated.resources.expired_the
-import vault.composeapp.generated.resources.expires_the
+import vault.composeapp.generated.resources.expires
+import vault.composeapp.generated.resources.month_apr
+import vault.composeapp.generated.resources.month_aug
+import vault.composeapp.generated.resources.month_dec
+import vault.composeapp.generated.resources.month_feb
+import vault.composeapp.generated.resources.month_jan
+import vault.composeapp.generated.resources.month_jul
+import vault.composeapp.generated.resources.month_jun
+import vault.composeapp.generated.resources.month_mar
+import vault.composeapp.generated.resources.month_may
+import vault.composeapp.generated.resources.month_nov
+import vault.composeapp.generated.resources.month_oct
+import vault.composeapp.generated.resources.month_sep
 import vault.composeapp.generated.resources.months
 import vault.composeapp.generated.resources.weeks
 import vault.composeapp.generated.resources.year
@@ -46,6 +58,7 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
         days < 365 -> ProductStateInfo("${days/30} ${stringResource(Res.string.months)}", MustardWarning, MustardContainer) //Every month is 30 now, but oh well
         else -> ProductStateInfo(">${days/365} ${stringResource(Res.string.year)}", MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiaryContainer)
     }
+    val bbDate = product.bestBefore.toDisplayString()
 
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -90,9 +103,10 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
                     )
                     Text(
                         text =
-                            if (days < 0) stringResource(Res.string.expired_the) + " ${product.bestBefore}"
-                            else stringResource(Res.string.expires_the) + " ${product.bestBefore}",
-                        color = Color.Gray
+                            if (days < 0) stringResource(Res.string.expired) + " " + bbDate
+                            else stringResource(Res.string.expires) + " " + bbDate,
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
@@ -124,3 +138,23 @@ data class ProductStateInfo(
     val textColor: Color,
     val containerColor: Color
 )
+
+@Composable
+fun LocalDate.toDisplayString(): String {
+    val monthResource = when(this.month) {
+        JANUARY -> Res.string.month_jan
+        FEBRUARY -> Res.string.month_feb
+        MARCH -> Res.string.month_mar
+        APRIL -> Res.string.month_apr
+        MAY -> Res.string.month_may
+        JUNE -> Res.string.month_jun
+        JULY -> Res.string.month_jul
+        AUGUST -> Res.string.month_aug
+        SEPTEMBER -> Res.string.month_sep
+        OCTOBER -> Res.string.month_oct
+        NOVEMBER -> Res.string.month_nov
+        DECEMBER -> Res.string.month_dec
+    }
+    val monthName = stringResource(monthResource)
+    return "$day. $monthName ${this.year}"
+}

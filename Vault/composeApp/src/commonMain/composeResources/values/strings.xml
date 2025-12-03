@@ -12,8 +12,7 @@
     <string name="months">months</string>
     <string name="years">years</string>
     <string name="year">year</string>
-    <string name="expires_the">Expires the</string>
-    <string name="expired_the">Expired the</string>
+    <string name="expires">Expires</string>
     <string name="edit">Edit</string>
     <string name="add_product">Add product</string>
     <string name="add_products">Add products</string>
@@ -36,4 +35,16 @@
     <string name="sorted_bb">Sorted by best before</string>
     <string name="sorted_containers">Sorted in containers</string>
     <string name="unorganized">Unorganized</string>
+    <string name="month_jan">January</string>
+    <string name="month_feb">February</string>
+    <string name="month_mar">March</string>
+    <string name="month_apr">April</string>
+    <string name="month_may">May</string>
+    <string name="month_jun">June</string>
+    <string name="month_jul">July</string>
+    <string name="month_aug">August</string>
+    <string name="month_sep">September</string>
+    <string name="month_oct">October</string>
+    <string name="month_nov">November</string>
+    <string name="month_dec">December</string>
 </resources>
