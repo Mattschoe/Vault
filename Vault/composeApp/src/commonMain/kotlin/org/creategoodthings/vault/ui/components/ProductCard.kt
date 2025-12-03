@@ -1,10 +1,14 @@
 package org.creategoodthings.vault.ui.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,25 +63,45 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = product.name,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text =
-                        if (days < 0) stringResource(Res.string.expired_the) + " ${product.bestBefore}"
-                        else stringResource(Res.string.expires_the) + " ${product.bestBefore}",
-                    color = Color.Gray
-                )
+                Card(
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                ) {
+                    Text(
+                        text = product.amount.toString(),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Column(
+                ) {
+                    Text(
+                        text = product.name,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text =
+                            if (days < 0) stringResource(Res.string.expired_the) + " ${product.bestBefore}"
+                            else stringResource(Res.string.expires_the) + " ${product.bestBefore}",
+                        color = Color.Gray
+                    )
+                }
             }
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = stateInfo.containerColor
                 ),
+
             ) {
 
                 Text(
