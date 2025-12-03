@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
@@ -66,6 +67,12 @@ class HomePageViewModel(
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
             if (changeToStore) _preferencesRepo.setStandardStorageID(storage.ID)
+        }
+    }
+
+    fun addContainer(container: Container) {
+        viewModelScope.launch {
+            _productRepo.insertContainer(container)
         }
     }
 }

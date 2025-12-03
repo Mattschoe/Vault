@@ -190,6 +190,7 @@ fun HomePage(
             onDismiss = { showAddProductDialog = false },
             storage2Containers = storage2Containers,
             onAddStorage = { viewModel.addStorage(it) },
+            onAddContainer = { viewModel.addContainer(it) }
         )
     }
     //endregion

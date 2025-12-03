@@ -1,6 +1,5 @@
 package org.creategoodthings.vault.ui.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -59,7 +57,6 @@ import vault.composeapp.generated.resources.add_container
 import vault.composeapp.generated.resources.add_icon
 import vault.composeapp.generated.resources.add_products
 import vault.composeapp.generated.resources.add_storage
-import vault.composeapp.generated.resources.allStringResources
 import vault.composeapp.generated.resources.amount
 import vault.composeapp.generated.resources.best_before
 import vault.composeapp.generated.resources.best_before_error
@@ -87,6 +84,7 @@ fun AddProductDialog(
     onDismiss: () -> Unit,
     storage2Containers: Map<Storage, List<Container>>,
     onAddStorage: (Storage) -> Unit,
+    onAddContainer: (Container) -> Unit
 ) {
     val spacingBetweenSections = 6.dp
     var showAddStorage by remember { mutableStateOf(false) }
@@ -101,6 +99,7 @@ fun AddProductDialog(
 
     var showStoragePicker by remember { mutableStateOf(false) }
     var storage: Storage? by remember { mutableStateOf(null) }
+    var showContainerPicker by remember { mutableStateOf(false) }
     var container: Container? by remember { mutableStateOf(null) }
     var amount by remember { mutableStateOf("") }
     var productName by remember { mutableStateOf("") }
@@ -288,68 +287,69 @@ fun AddProductDialog(
                 //TODO ERROR MESSAGE IF STORAGE IS NULL (or communicate better that this is mandatory)
                 Spacer(Modifier.height(spacingBetweenSections))
                 //region CONTAINER
-                /*
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(Res.string.container),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(Modifier.weight(1f))
-                    Box(
-                        modifier = Modifier.width(190.dp)
+                storage?.let {
+                    val containers = storage2Containers[it] ?: emptyList()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
                     ) {
-                        DialogOutlinedTextField(
-                            value = container?.name ?: "",
-                            onValueChange = { /* READ ONLY */ },
-                            readOnly = true,
-                            placeholder = "",
-                            trailingIcon = {
-                                Icon(vectorResource(
-                                    if (showContainerPicker) Res.drawable.dropdown_open_icon
-                                    else Res.drawable.dropdown_closed_icon
-                                ),
-                                    null
-                                )
-                            }
+                        Text(
+                            text = stringResource(Res.string.container),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge
                         )
-
-                        DropdownMenu(
-                            expanded = showContainerPicker,
-                            onDismissRequest = { showContainerPicker = false }
+                        Spacer(Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier.width(190.dp)
                         ) {
-                            containers.forEach {
+                            DialogOutlinedTextField(
+                                value = container?.name ?: "",
+                                onValueChange = { /* READ ONLY */ },
+                                readOnly = true,
+                                placeholder = "",
+                                trailingIcon = {
+                                    Icon(vectorResource(
+                                        if (showContainerPicker) Res.drawable.dropdown_open_icon
+                                        else Res.drawable.dropdown_closed_icon
+                                    ),
+                                        null
+                                    )
+                                }
+                            )
+
+                            DropdownMenu(
+                                expanded = showContainerPicker,
+                                onDismissRequest = { showContainerPicker = false }
+                            ) {
+                                 containers.forEach {
+                                    DropdownMenuItem(
+                                        text = { Text(it.name) },
+                                        onClick = {
+                                            container = it
+                                            showContainerPicker = false
+                                        }
+                                    )
+                                }
+
                                 DropdownMenuItem(
-                                    text = { Text(it.name) },
-                                    onClick = {
-                                        container = it
-                                        showContainerPicker = false
+                                    text = { Text(stringResource(Res.string.add_container)) },
+                                    onClick = { showAddContainer = true },
+                                    trailingIcon = { Icon(
+                                        vectorResource(Res.drawable.add_icon),
+                                        stringResource(Res.string.add_container))
                                     }
                                 )
                             }
 
-                            DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.add_container)) },
-                                onClick = { showAddContainer = true },
-                                trailingIcon = { Icon(
-                                    vectorResource(Res.drawable.add_icon),
-                                    stringResource(Res.string.add_container))
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { showContainerPicker = !showContainerPicker }
                             )
                         }
-
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable { showContainerPicker = !showContainerPicker }
-                        )
                     }
                 }
-                 */
                 //endregion
                 Spacer(Modifier.height(spacingBetweenSections))
                 //region REMINDER
@@ -488,6 +488,18 @@ fun AddProductDialog(
             onDismiss = { showAddStorage = false }
         )
     }
+
+    if (showAddContainer && storage != null) {
+        AddContainerDialog(
+            storageID = storage!!.ID,
+            onConfirm = {
+                onAddContainer(it)
+                container = it
+                showAddContainer = false
+            },
+            onDismiss = { showAddContainer = false }
+        )
+    }
     //endregion
 }
 
@@ -548,6 +560,66 @@ fun AddStorageDialog(onConfirm: (Storage) -> Unit, onDismiss: () -> Unit) {
     }
 }
 
+@Composable
+fun AddContainerDialog(
+    storageID: String,
+    onConfirm: (Container) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var containerName by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier.padding(24.dp),
+            shape = RoundedCornerShape(24.dp),
+            shadowElevation = 6.dp,
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                //TITLE
+                Text(
+                    text = stringResource(Res.string.add_container),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(6.dp))
+                DialogOutlinedTextField(
+                    value = containerName,
+                    onValueChange = { containerName = it },
+                    placeholder = stringResource(Res.string.add_container),
+                )
+                Spacer(Modifier.height(18.dp))
+                //region OK + CANCEL
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.cancel),
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onDismiss() }
+                    )
+                    Text(
+                        text = stringResource(Res.string.ok),
+                        color = if (containerName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onConfirm(Container(storageID = storageID, name = containerName)) }
+                    )
+                }
+                //endregion
+            }
+        }
+    }
+}
 @Composable
 fun DialogOutlinedTextField(
     value: String,
