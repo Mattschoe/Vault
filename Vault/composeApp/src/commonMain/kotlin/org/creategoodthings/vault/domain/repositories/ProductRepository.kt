@@ -14,8 +14,7 @@ interface ProductRepository {
     fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
     fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?>
     fun getAllProductsOrderedByAlphabet(): Flow<List<Product>>
-    fun getContainersWithProductsOrderedByBB(): Flow<Map<Container, List<Product>>>
-    fun getStoragesWithProductsOrderedByBB(): Flow<Map<Storage, List<Product>>>
+    fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<Map<Container, List<Product>>>
     fun getProductsOrderedByBB(): Flow<List<Product>>
 }
 

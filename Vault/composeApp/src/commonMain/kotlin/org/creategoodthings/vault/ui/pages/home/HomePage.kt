@@ -146,7 +146,11 @@ fun HomePage(
                     onStorageChosen = { viewModel.changeStorage(it) },
                     onStorageAdded = {
                         viewModel.addStorage(it, true)
-                    }
+                    },
+                    modifier = Modifier
+                        .clickable { if (selectedStorage is Success) {
+                            navController.navigate(PageNavigation.Storage((selectedStorage as Success).data.storage.ID))
+                        }}
                 )
             }
             //endregion
@@ -163,7 +167,13 @@ fun HomePage(
                 )
             }
             items(products) { product ->
-                ProductCard(product)
+                ProductCard(
+                    product = product,
+                    modifier = Modifier
+                        .clickable { if (selectedStorage is Success) {
+                            navController.navigate(PageNavigation.Storage((selectedStorage as Success).data.storage.ID))
+                        }}
+                )
             }
             //endregion
         }

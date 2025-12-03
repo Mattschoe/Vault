@@ -1,7 +1,91 @@
 package org.creategoodthings.vault.ui.pages.storage
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.repositories.PreferencesRepository
+import org.creategoodthings.vault.domain.repositories.ProductRepository
+import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 
+class StoragePageViewModel(
+    private val _storageID: String,
+    private val _productRepo: ProductRepository,
+    private val _preferenceRepo: PreferencesRepository
+): ViewModel() {
 
+    private val _sortOption = _preferenceRepo.sortOption.map { option ->
+        when(option) {
+            ALPHABET -> ALPHABET
+            CONTAINER -> CONTAINER
+            BEST_BEFORE -> BEST_BEFORE
+            null -> BEST_BEFORE
+        }
+    }
+    val sortOption = _sortOption.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = BEST_BEFORE
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val products = _sortOption.flatMapLatest { option ->
+        when (option) {
+            CONTAINER -> {
+                _productRepo.getStorageContainersWithProductsOrderedByBB(_storageID).map {
+                    ProductListData.Grouped(it)
+                }
+            }
+
+            ALPHABET -> {
+                _productRepo.getAllProductsOrderedByAlphabet().map {
+                    ProductListData.Flat(it)
+                }
+            }
+
+            BEST_BEFORE -> {
+                _productRepo.getProductsOrderedByBB().map {
+                    ProductListData.Flat(it)
+                }
+            }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ProductListData.Flat(emptyList())
+    )
+
+    /**
+     * Toggles between the different sort options
+     */
+    fun toggleBetweenSortOption() {
+        val newOption = when(sortOption.value) {
+            ALPHABET -> CONTAINER
+            CONTAINER -> BEST_BEFORE
+            BEST_BEFORE -> ALPHABET
+        }
+        viewModelScope.launch {
+            _preferenceRepo.setSortOption(newOption)
+        }
+    }
+}
+
+sealed interface ProductListData {
+    data class Grouped(val groups: Map<Container, List<Product>>) : ProductListData
+    data class Flat(val products: List<Product>) : ProductListData
+}
+
+enum class SortOption {
+    ALPHABET,
+    CONTAINER,
+    BEST_BEFORE
+}
 
 /*
 USE THIS IN STORAGE VIEWMODEL
@@ -19,10 +103,3 @@ val products = _sortOption.flatMapLatest { sortOrder ->
     initialValue = emptyList()
 )
 */
-
-
-enum class SortOption {
-    ALPHABET,
-    STORAGE,
-    BEST_BEFORE
-}

@@ -87,9 +87,9 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         }
     }
 
-    override fun getContainersWithProductsOrderedByBB(): Flow<Map<Container, List<Product>>> {
-        return dao.getContainersWithProductsOrderedByBB().map { entity ->
-            entity.map { (containerEntity, productsEntity) ->
+    override fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<Map<Container, List<Product>>> {
+        return dao.getStorageContainersWithProductsOrderedByBB(storageID).map { entity ->
+            entity?.map { (containerEntity, productsEntity) ->
                 val container = Container(
                     ID = containerEntity.ID,
                     storageID = containerEntity.storageID,
@@ -97,22 +97,10 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
                 )
                 val products = productsEntity.map { it.toDomain() }
                 container to products
-            }.toMap()
+            }?.toMap() ?: emptyMap()
         }
     }
 
-    override fun getStoragesWithProductsOrderedByBB(): Flow<Map<Storage, List<Product>>> {
-        return dao.getStoragesWithProductsOrderedByBB().map { entity ->
-            entity.map { (storageEntity, productsEntity) ->
-                val storage = Storage(
-                    ID = storageEntity.ID,
-                    name = storageEntity.name
-                )
-                val products = productsEntity.map { it.toDomain() }
-                storage to products
-            }.toMap()
-        }
-    }
 
     override fun getProductsOrderedByBB(): Flow<List<Product>> {
         return dao.getProductsOrderedByBB().map { products ->

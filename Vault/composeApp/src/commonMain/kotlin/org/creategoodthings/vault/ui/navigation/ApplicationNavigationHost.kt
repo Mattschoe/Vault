@@ -13,6 +13,7 @@ import org.creategoodthings.vault.AppContainer
 import org.creategoodthings.vault.ui.pages.home.HomePage
 import org.creategoodthings.vault.ui.pages.home.HomePageViewModel
 import org.creategoodthings.vault.ui.pages.storage.StoragePage
+import org.creategoodthings.vault.ui.pages.storage.StoragePageViewModel
 
 @Composable
 fun ApplicationNavigationHost(
@@ -39,9 +40,16 @@ fun ApplicationNavigationHost(
         //Storage
         composable<PageNavigation.Storage> { backStackEntry ->
             val args = backStackEntry.toRoute<PageNavigation.Storage>()
+            val viewModel = viewModel<StoragePageViewModel> {
+                StoragePageViewModel(
+                    args.storageID,
+                        appContainer.productRepo,
+                    appContainer.preferencesRepository
+                    )
+            }
             StoragePage(
-                storageID = args.storageID,
-                navController = navController
+                navController = navController,
+                viewModel = viewModel
             )
         }
 

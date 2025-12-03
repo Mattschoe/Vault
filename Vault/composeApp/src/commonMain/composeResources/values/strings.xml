@@ -31,4 +31,7 @@
     <string name="add_container">Add container</string>
     <string name="storage_name">Storage name</string>
     <string name="expired">Expired</string>
+    <string name="sorted_alphabetically">Sorted alphabetically</string>
+    <string name="sorted_bb">Sorted by best before</string>
+    <string name="sorted_containers">Sorted in containers</string>
 </resources>
