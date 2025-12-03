@@ -35,4 +35,5 @@
     <string name="sorted_alphabetically">Sorted alphabetically</string>
     <string name="sorted_bb">Sorted by best before</string>
     <string name="sorted_containers">Sorted in containers</string>
+    <string name="unorganized">Unorganized</string>
 </resources>

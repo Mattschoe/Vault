@@ -37,6 +37,7 @@ import vault.composeapp.generated.resources.category_icon
 import vault.composeapp.generated.resources.sorted_alphabetically
 import vault.composeapp.generated.resources.sorted_bb
 import vault.composeapp.generated.resources.sorted_containers
+import vault.composeapp.generated.resources.unorganized
 
 @Composable
 fun StoragePage(
@@ -120,13 +121,8 @@ fun StoragePage(
                 is Grouped -> {
                     state.groups.forEach { (container, products) ->
                         item(key = container.ID) {
-                            Text(
-                                text = container.name,
-                                color = Color.DarkGray,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Spacer(Modifier.height(8.dp))
+                            ContainerText(container.name)
+                            Spacer(Modifier.height(4.dp))
                         }
                         items(
                             items = products,
@@ -138,6 +134,13 @@ fun StoragePage(
                                     .animateItem()
                             )
                         }
+                        item {
+                            Spacer(Modifier.height(24.dp))
+                        }
+                    }
+
+                    item {
+                        ContainerText(stringResource(Res.string.unorganized))
                     }
                     items(
                         items = state.unOrganizedProducts,
@@ -153,4 +156,14 @@ fun StoragePage(
             }
         }
     }
+}
+
+@Composable
+fun ContainerText(text: String) {
+    Text(
+        text = text,
+        color = Color.Gray,
+        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.bodyLarge
+    )
 }
