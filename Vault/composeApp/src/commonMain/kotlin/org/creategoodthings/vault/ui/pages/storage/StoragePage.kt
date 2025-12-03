@@ -17,6 +17,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -116,7 +118,37 @@ fun StoragePage(
                 }
 
                 is Grouped -> {
-
+                    state.groups.forEach { (container, products) ->
+                        item(key = container.ID) {
+                            Text(
+                                text = container.name,
+                                color = Color.DarkGray,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        items(
+                            items = products,
+                            key = { it.ID }
+                        ) { product ->
+                            ProductCard(
+                                product = product,
+                                modifier = Modifier
+                                    .animateItem()
+                            )
+                        }
+                    }
+                    items(
+                        items = state.unOrganizedProducts,
+                        key = { it.ID }
+                    ) { product ->
+                        ProductCard(
+                            product = product,
+                            modifier = Modifier
+                                .animateItem()
+                        )
+                    }
                 }
             }
         }

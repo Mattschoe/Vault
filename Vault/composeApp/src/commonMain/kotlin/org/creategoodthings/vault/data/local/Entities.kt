@@ -74,3 +74,12 @@ data class StorageWithProductsEntity(
     )
     val products: List<ProductEntity>
 )
+
+data class ContainerWithProductsEntity(
+    @Embedded val container: ContainerEntity,
+    @Relation(
+        parentColumn = "ID",
+        entityColumn = "containerID"
+    )
+    val products: List<ProductEntity>
+)

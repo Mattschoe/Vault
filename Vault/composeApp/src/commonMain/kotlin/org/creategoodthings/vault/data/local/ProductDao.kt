@@ -39,8 +39,12 @@ interface ProductDao {
     @Query("SELECT * FROM products ORDER BY name")
     fun getAllProductsOrderedByAlphabet(): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM container JOIN products ON container.ID = products.containerID WHERE container.storageID = :storageID ORDER BY bestBeforeDate")
-    fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<Map<ContainerEntity, List<ProductEntity>>?>
+    @Transaction
+    @Query("SELECT * FROM container WHERE storageID = :storageID")
+    fun getStorageContainersWithProducts(storageID: String): Flow<List<ContainerWithProductsEntity>>
+
+    @Query("SELECT * FROM products WHERE containerID IS NULL AND storageID = :storageID ORDER BY bestBeforeDate")
+    fun getStorageProductsWithoutContainerOrderedByBB(storageID: String): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products ORDER BY bestBeforeDate")
     fun getProductsOrderedByBB(): Flow<List<ProductEntity>>

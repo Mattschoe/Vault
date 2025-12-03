@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.ui.pages.storage.SortOption.*
@@ -38,8 +40,11 @@ class StoragePageViewModel(
     val products = _sortOption.flatMapLatest { option ->
         when (option) {
             CONTAINER -> {
-                _productRepo.getStorageContainersWithProductsOrderedByBB(_storageID).map {
-                    ProductListData.Grouped(it)
+                combine(
+                    _productRepo.getStorageContainersWithProductsOrderedByBB(_storageID),
+                    _productRepo.getStorageProductsWithoutContainerOrderedByBB(_storageID)
+                ) { groups, unOrganizedProducts ->
+                    ProductListData.Grouped(groups, unOrganizedProducts)
                 }
             }
 
@@ -77,7 +82,10 @@ class StoragePageViewModel(
 }
 
 sealed interface ProductListData {
-    data class Grouped(val groups: Map<Container, List<Product>>) : ProductListData
+    data class Grouped(
+        val groups: List<ContainerWithProducts>,
+        val unOrganizedProducts: List<Product>
+    ) : ProductListData
     data class Flat(val products: List<Product>) : ProductListData
 }
 
