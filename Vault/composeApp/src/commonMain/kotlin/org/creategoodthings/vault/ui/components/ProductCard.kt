@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
@@ -25,7 +24,7 @@ import kotlinx.datetime.Month.*
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.creategoodthings.vault.ui.theme.MustardContainer
-import org.creategoodthings.vault.ui.theme.MustardWarning
+import org.creategoodthings.vault.ui.theme.OnMustardContainer
 import org.jetbrains.compose.resources.stringResource
 import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.days
@@ -52,11 +51,11 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
     //Formats the amount of days remaining into days, weeks and months
     val days = product.calculateDaysRemaining()
     val stateInfo = when {
-        days < 0 -> ProductStateInfo("$days ${stringResource(Res.string.expired).uppercase()}", Color.Black, MaterialTheme.colorScheme.error)
-        days < 7 -> ProductStateInfo("$days ${stringResource(Res.string.days)}", MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondaryContainer)
-        days < 30 -> ProductStateInfo("${days/7} ${stringResource(Res.string.weeks)}", MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondaryContainer)
-        days < 365 -> ProductStateInfo("${days/30} ${stringResource(Res.string.months)}", MustardWarning, MustardContainer) //Every month is 30 now, but oh well
-        else -> ProductStateInfo(">${days/365} ${stringResource(Res.string.year)}", MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiaryContainer)
+        days < 0 -> ProductStateInfo(stringResource(Res.string.expired).uppercase(), MaterialTheme.colorScheme.onError, MaterialTheme.colorScheme.error)
+        days < 7 -> ProductStateInfo("$days ${stringResource(Res.string.days)}", MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer)
+        days < 30 -> ProductStateInfo("${days/7} ${stringResource(Res.string.weeks)}", MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer)
+        days < 365 -> ProductStateInfo("${days/30} ${stringResource(Res.string.months)}", OnMustardContainer, MustardContainer) //Every month is 30 now, but oh well
+        else -> ProductStateInfo(">${days/365} ${stringResource(Res.string.year)}", MaterialTheme.colorScheme.onTertiaryContainer, MaterialTheme.colorScheme.tertiaryContainer)
     }
     val bbDate = product.bestBefore.toDisplayString()
 

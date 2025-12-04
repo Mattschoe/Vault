@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -59,25 +58,28 @@ import org.creategoodthings.vault.ui.components.AddStorageDialog
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.navigation.PageNavigation
 import org.creategoodthings.vault.ui.pages.PageShell
+import org.creategoodthings.vault.ui.pages.home.StorageUIState.Loading
+import org.creategoodthings.vault.ui.pages.home.StorageUIState.NoneSelected
+import org.creategoodthings.vault.ui.pages.home.StorageUIState.Success
+import org.creategoodthings.vault.ui.theme.MustardContainer
+import org.creategoodthings.vault.ui.theme.MustardWarning
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
+import vault.composeapp.generated.resources.add_icon
 import vault.composeapp.generated.resources.add_storage
+import vault.composeapp.generated.resources.check_icon
 import vault.composeapp.generated.resources.choose_storage
 import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.expires_next
+import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.products
 import vault.composeapp.generated.resources.settings
 import vault.composeapp.generated.resources.settings_icon
 import vault.composeapp.generated.resources.total
 import vault.composeapp.generated.resources.welcome
 import kotlin.math.min
-import org.creategoodthings.vault.ui.pages.home.StorageUIState.*
-import vault.composeapp.generated.resources.add_icon
-import vault.composeapp.generated.resources.check_circle_icon
-import vault.composeapp.generated.resources.check_icon
-import vault.composeapp.generated.resources.ok
 
 @Composable
 fun HomePage(
@@ -222,11 +224,12 @@ fun StorageStatusCard(
             .fillMaxWidth()
     ) {
         Column {
-            //region CHOOSE STORAGE
+            //region CHOOSE STORAGE + TOTAL Legend
             Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
-                    .fillMaxWidth(0.5f)
+                    .fillMaxWidth(1f)
             ) {
                 Box {
                     Row(
@@ -311,8 +314,9 @@ fun StatusChart(
 
             val infos = categoryCounts.map { (category, count) ->
                 val color = when (category) {
-                    StatusInfo.Category.EXPIRED -> Color.Red
+                    StatusInfo.Category.EXPIRED -> MaterialTheme.colorScheme.error
                     StatusInfo.Category.SOON -> MaterialTheme.colorScheme.secondary
+                    StatusInfo.Category.WARNING -> MustardWarning
                     StatusInfo.Category.FRESH -> MaterialTheme.colorScheme.tertiary
                 }
 
@@ -400,6 +404,7 @@ fun StatusChart(
                         val centerItem: StatusInfo? =
                             infos.find { it.category == StatusInfo.Category.EXPIRED }
                             ?: infos.find { it.category == StatusInfo.Category.SOON }
+                            ?: infos.find { it.category == StatusInfo.Category.WARNING }
 
 
                         if (centerItem != null) {
@@ -439,14 +444,6 @@ fun StatusChart(
                             color = it.color,
                             label = it.category.toString(),
                             subLabel = "${it.amount} " + stringResource(Res.string.products)
-                        )
-                    }
-
-                    if (totalAmount > 0) {
-                        ChartLegend(
-                            color = MaterialTheme.colorScheme.primary,
-                            label = stringResource(Res.string.total),
-                            subLabel = "$totalAmount " + stringResource(Res.string.products)
                         )
                     }
                 }
@@ -493,6 +490,7 @@ data class StatusInfo(
     enum class Category {
         EXPIRED,
         SOON,
+        WARNING,
         FRESH;
 
         override fun toString(): String {
@@ -513,6 +511,7 @@ fun getStatusLevelForItem(product: Product): StatusInfo.Category {
     return when {
         daysRemaining < 0 -> StatusInfo.Category.EXPIRED
         daysRemaining < 30 -> StatusInfo.Category.SOON
+        daysRemaining < 365 -> StatusInfo.Category.WARNING
         else -> StatusInfo.Category.FRESH
     }
 }
