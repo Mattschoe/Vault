@@ -172,9 +172,7 @@ fun HomePage(
                 ProductCard(
                     product = product,
                     modifier = Modifier
-                        .clickable { if (selectedStorage is Success) {
-                            navController.navigate(PageNavigation.Storage((selectedStorage as Success).data.storage.ID))
-                        }}
+                        .clickable { navController.navigate(PageNavigation.Storage(product.storageID)) }
                 )
             }
             //endregion
