@@ -9,19 +9,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.jetbrains.compose.resources.stringResource
@@ -34,6 +48,8 @@ import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 import vault.composeapp.generated.resources.alphabet_icon
 import vault.composeapp.generated.resources.calendar_icon
 import vault.composeapp.generated.resources.category_icon
+import vault.composeapp.generated.resources.check_icon
+import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.sorted_alphabetically
 import vault.composeapp.generated.resources.sorted_bb
 import vault.composeapp.generated.resources.sorted_containers
@@ -46,7 +62,14 @@ fun StoragePage(
     modifier: Modifier = Modifier,
 ) {
     val sortOption by viewModel.sortOption.collectAsState()
+    val storageName by viewModel.storageName.collectAsState()
     val state by viewModel.products.collectAsState()
+
+    var hasInitialFocus by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    var editStorageName by remember { mutableStateOf(false) }
+    var newStorageName by remember(storageName) { mutableStateOf(storageName) }
 
     PageShell(
         modifier = modifier,
@@ -63,19 +86,84 @@ fun StoragePage(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row {
-                        Text(
-                            text = "Lagertitel",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.edit_icon),
-                            contentDescription = stringResource(Res.string.edit),
-                            modifier = Modifier
-                                .clickable { }
-                        )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (editStorageName) {
+                            OutlinedTextField(
+                                value = newStorageName,
+                                onValueChange = { newStorageName = it },
+                                textStyle = MaterialTheme.typography.headlineLarge,
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        editStorageName = false
+                                        hasInitialFocus = false
+                                        viewModel.updateStorageName(newStorageName)
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = MaterialTheme.colorScheme.primary,
+                                ),
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            editStorageName = false
+                                            hasInitialFocus = false
+                                            viewModel.updateStorageName(newStorageName)
+                                            focusManager.clearFocus()
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.check_icon),
+                                            contentDescription = stringResource(Res.string.edit),
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            hasInitialFocus = true
+                                        } else if (hasInitialFocus) {
+                                            editStorageName = false
+                                            hasInitialFocus = false
+                                            viewModel.updateStorageName(newStorageName)
+                                        }
+                                    }
+                            )
+                            LaunchedEffect(Unit) {
+                                delay(50)
+                                focusRequester.requestFocus()
+                            }
+                        } else {
+                            Text(
+                                text = storageName,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .clickable {
+                                        editStorageName = true
+                                        hasInitialFocus = false
+                                    }
+                            )
+                            IconButton(
+                                onClick = {
+                                    editStorageName = true
+                                    hasInitialFocus = false
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.edit_icon),
+                                    contentDescription = stringResource(Res.string.edit),
+                                )
+                            }
+                        }
                     }
                     Icon(
                         imageVector = vectorResource(

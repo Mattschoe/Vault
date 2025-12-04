@@ -23,7 +23,7 @@ fun PageShell(
             floatingActionButton = { if (floatingActionButton != null) floatingActionButton() }
         ) { innerPadding ->
             val padding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
+                top = innerPadding.calculateTopPadding() + 12.dp,
                 bottom = innerPadding.calculateBottomPadding(),
                 start = 24.dp,
                 end = 24.dp

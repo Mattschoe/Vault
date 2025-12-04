@@ -2,6 +2,7 @@ package org.creategoodthings.vault.ui.pages.storage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -9,8 +10,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
@@ -34,6 +35,12 @@ class StoragePageViewModel(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = BEST_BEFORE
+    )
+
+    val storageName = _productRepo.getStorageName(_storageID).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ""
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -77,6 +84,12 @@ class StoragePageViewModel(
         }
         viewModelScope.launch {
             _preferenceRepo.setSortOption(newOption)
+        }
+    }
+
+    fun updateStorageName(newName: String) {
+        viewModelScope.launch {
+            _productRepo.updateStorage(Storage(ID = _storageID, name = newName))
         }
     }
 }

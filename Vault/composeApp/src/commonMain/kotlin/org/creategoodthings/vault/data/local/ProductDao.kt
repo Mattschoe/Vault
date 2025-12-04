@@ -21,6 +21,9 @@ interface ProductDao {
 
     @Update
     suspend fun updateProduct(product: ProductEntity)
+
+    @Update
+    suspend fun updateStorage(storage: StorageEntity)
     //endregion
 
     //region DELETE
@@ -29,6 +32,9 @@ interface ProductDao {
     //endregion
 
     //region QUERIES
+    @Query("SELECT name FROM storage WHERE ID = :storageID")
+    fun getStorageName(storageID: String): Flow<String>
+
     @Query("SELECT * FROM storage LEFT JOIN container ON storage.ID = container.storageID")
     fun getStoragesWithContainersShell(): Flow<Map<StorageEntity, List<ContainerEntity>>>
 

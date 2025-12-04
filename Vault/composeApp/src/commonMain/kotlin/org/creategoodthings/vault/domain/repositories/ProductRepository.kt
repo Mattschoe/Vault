@@ -13,12 +13,15 @@ interface ProductRepository {
     suspend fun insertStorage(storage: Storage)
     suspend fun insertContainer(container: Container)
 
+    suspend fun updateStorage(storage: Storage)
+
     fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
     fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?>
     fun getAllProductsOrderedByAlphabet(): Flow<List<Product>>
     fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<List<ContainerWithProducts>>
     fun getStorageProductsWithoutContainerOrderedByBB(storageID: String): Flow<List<Product>>
     fun getProductsOrderedByBB(): Flow<List<Product>>
+    fun getStorageName(storageID: String): Flow<String>
 }
 
 data class StorageWithProducts(
