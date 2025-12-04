@@ -4,9 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -19,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month.*
 import org.creategoodthings.vault.domain.Product
@@ -84,12 +89,16 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
+                    modifier = Modifier
+                        .size(30.dp)
                 ) {
                     Text(
                         text = product.amount.toString(),
                         fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
                         modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                            .fillMaxSize()
+                            .wrapContentSize(align = Alignment.Center)
                     )
                 }
                 Spacer(Modifier.width(8.dp))
