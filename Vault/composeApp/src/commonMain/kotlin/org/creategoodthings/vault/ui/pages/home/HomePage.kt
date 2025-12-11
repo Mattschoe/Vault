@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -56,6 +57,7 @@ import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.AddStorageDialog
 import org.creategoodthings.vault.ui.components.ProductCard
+import org.creategoodthings.vault.ui.components.WelcomeDialog
 import org.creategoodthings.vault.ui.navigation.PageNavigation
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.Loading
@@ -86,113 +88,142 @@ fun HomePage(
     viewModel: HomePageViewModel
 ) {
     val user = remember { "Matthias" }
-    val products by viewModel.products.collectAsState()
-    val storage2Containers by viewModel.storages.collectAsState()
-    val selectedStorage by viewModel.selectedStorage.collectAsState()
-    var showAddProductDialog by remember { mutableStateOf(false) }
+    val dataState by viewModel.uiState.collectAsState()
 
-    //region PAGESHELL UI
-    PageShell(
-        floatingActionButton = {
-            AddProductFAB(
-                onClick = { showAddProductDialog = true }
-            )
-        },
-        modifier = modifier,
-    ) { padding ->
-        LazyColumn(
-            contentPadding = padding,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            //region TITEL
-            item {
-                Row(
+    when (val dataState = dataState) {
+        is DataUIState.Loading -> {
+            PageShell { padding ->
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(padding)
+                        .fillMaxSize()
                 ) {
-                    Column {
-                        Text(
-                            text = stringResource(Res.string.welcome) + ",",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                        Text(
-                            text = user,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineLarge
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(72.dp)
+                    )
+                }
+            }
+        }
+        is DataUIState.Ready -> {
+            val products = dataState.products
+            val storage2Containers = dataState.storages
+            val selectedStorage = dataState.selectedStorage
+            val noStorageSelected = remember(key1 = selectedStorage) { selectedStorage is NoneSelected }
+            var showAddProductDialog by remember { mutableStateOf(false) }
+
+            //region PAGESHELL UI
+            PageShell(
+                floatingActionButton = {
+                    AddProductFAB(
+                        onClick = { showAddProductDialog = true }
+                    )
+                },
+                modifier = modifier,
+            ) { padding ->
+                LazyColumn(
+                    contentPadding = padding,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    //region TITEL
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = stringResource(Res.string.welcome) + ",",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.headlineLarge
+                                )
+                                Text(
+                                    text = user,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.headlineLarge
+                                )
+                            }
+
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.settings_icon),
+                                contentDescription = stringResource(Res.string.settings),
+                                modifier = Modifier
+                                    .clickable { navController.navigate(PageNavigation.Settings) }
+                            )
+                        }
+                    }
+                    //endregion
+
+                    //region STATUS
+                    item {
+                        StorageStatusCard(
+                            uiState = selectedStorage,
+                            storages = storage2Containers.keys.toList(),
+                            onStorageChosen = { viewModel.changeStorage(it) },
+                            onStorageAdded = {
+                                viewModel.addStorage(it, true)
+                            },
+                            modifier = Modifier
+                                .clickable { if (selectedStorage is Success) {
+                                    navController.navigate(PageNavigation.Storage(selectedStorage.data.storage.ID))
+                                }}
                         )
                     }
+                    //endregion
 
-                    Icon(
-                        imageVector = vectorResource(Res.drawable.settings_icon),
-                        contentDescription = stringResource(Res.string.settings),
-                        modifier = Modifier
-                            .clickable { navController.navigate(PageNavigation.Settings) }
-                    )
+                    //region EXPIRES SOON
+                    item {
+                        Text(
+                            text = stringResource(Res.string.expires_next),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier
+                                .padding(top = 12.dp)
+                        )
+                    }
+                    items(products) { product ->
+                        ProductCard(
+                            product = product,
+                            modifier = Modifier
+                                .clickable { navController.navigate(PageNavigation.Storage(product.storageID)) }
+                        )
+                    }
+                    //endregion
                 }
             }
             //endregion
 
-            //region STATUS
-            item {
-                StorageStatusCard(
-                    uiState = selectedStorage,
-                    storages = storage2Containers.keys.toList(),
-                    onStorageChosen = { viewModel.changeStorage(it) },
-                    onStorageAdded = {
-                        viewModel.addStorage(it, true)
+            //region DIALOGS
+            if (showAddProductDialog) {
+                AddProductDialog(
+                    onClick = {
+                        viewModel.addProduct(it)
+                        showAddProductDialog = false
                     },
-                    modifier = Modifier
-                        .clickable { if (selectedStorage is Success) {
-                            navController.navigate(PageNavigation.Storage((selectedStorage as Success).data.storage.ID))
-                        }}
+                    onDismiss = { showAddProductDialog = false },
+                    storage2Containers = storage2Containers,
+                    onAddStorage = { viewModel.addStorage(it) },
+                    onAddContainer = { viewModel.addContainer(it) },
+                    selectedStorage = (selectedStorage as? Success)?.data?.storage
                 )
             }
-            //endregion
 
-            //region EXPIRES SOON
-            item {
-                Text(
-                    text = stringResource(Res.string.expires_next),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                )
-            }
-            items(products) { product ->
-                ProductCard(
-                    product = product,
-                    modifier = Modifier
-                        .clickable { navController.navigate(PageNavigation.Storage(product.storageID)) }
+            if (noStorageSelected) {
+                WelcomeDialog(
+                    onConfirm = { viewModel.addStorage(it, true) }
                 )
             }
             //endregion
         }
     }
-    //endregion
-
-    //region DIALOGS
-    if (showAddProductDialog) {
-        AddProductDialog(
-            onClick = {
-                viewModel.addProduct(it)
-                showAddProductDialog = false
-            },
-            onDismiss = { showAddProductDialog = false },
-            storage2Containers = storage2Containers,
-            onAddStorage = { viewModel.addStorage(it) },
-            onAddContainer = { viewModel.addContainer(it) },
-            selectedStorage = (selectedStorage as? Success)?.data?.storage
-        )
-    }
-    //endregion
 }
 
 @Composable

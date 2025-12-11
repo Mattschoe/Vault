@@ -47,4 +47,11 @@
     <string name="month_oct">October</string>
     <string name="month_nov">November</string>
     <string name="month_dec">December</string>
+    <string name="optional">Optional</string>
+    <string name="give_storage_name">Start by giving your storage a name</string>
+    <String name="vault">Vault</String>
+    <string name="welcome_dialog_first_page_body">is for everyone who wants to have a better overview of their safety stock. Just inform us about a products best-before date and we'll notify you when your stock is going out of date!</string>
+    <string name="welcome_dialog_premium_body">Psst: Want to share your overview with others? Or keep the storage safe in the cloud? Then try our premium feature here!</string>
+    <string name="storage_name_example">cupboard under closet</string>
+    <string name="ex">Ex:</string>
 </resources>

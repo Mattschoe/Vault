@@ -1,15 +1,24 @@
 package org.creategoodthings.vault.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
@@ -33,10 +42,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -51,6 +66,7 @@ import org.creategoodthings.vault.ui.components.RemindMeType.DAYS
 import org.creategoodthings.vault.ui.components.RemindMeType.MONTHS
 import org.creategoodthings.vault.ui.components.RemindMeType.WEEKS
 import org.creategoodthings.vault.ui.components.RemindMeType.YEARS
+import org.creategoodthings.vault.ui.theme.PremiumGold
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
@@ -68,13 +84,21 @@ import vault.composeapp.generated.resources.days
 import vault.composeapp.generated.resources.description
 import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
+import vault.composeapp.generated.resources.ex
+import vault.composeapp.generated.resources.give_storage_name
 import vault.composeapp.generated.resources.months
 import vault.composeapp.generated.resources.ok
+import vault.composeapp.generated.resources.premium_icon
 import vault.composeapp.generated.resources.product_name
 import vault.composeapp.generated.resources.remind_me
 import vault.composeapp.generated.resources.storage
 import vault.composeapp.generated.resources.storage_name
+import vault.composeapp.generated.resources.storage_name_example
+import vault.composeapp.generated.resources.vault
 import vault.composeapp.generated.resources.weeks
+import vault.composeapp.generated.resources.welcome
+import vault.composeapp.generated.resources.welcome_dialog_first_page_body
+import vault.composeapp.generated.resources.welcome_dialog_premium_body
 import vault.composeapp.generated.resources.years
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -657,6 +681,204 @@ fun DialogOutlinedTextField(
         readOnly = readOnly,
         keyboardOptions = keyboardOptions
     )
+}
+
+@Composable
+fun WelcomeDialog(
+    onConfirm: (Storage) -> Unit
+) {
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pageCount = pagerState.pageCount
+    val isLastPage = pagerState.currentPage == pageCount - 1
+
+    var storageName by remember { mutableStateOf("") }
+    val isValid = isLastPage && storageName.isNotBlank()
+    val page1BodyText = buildAnnotatedString {
+        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+            append(stringResource(Res.string.vault))
+        }
+        append(" ")
+        append(stringResource(Res.string.welcome_dialog_first_page_body))
+    }
+
+    Dialog(onDismissRequest = { /* NOT ALLOWED */ }) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            shadowElevation = 6.dp,
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .height(450.dp)
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) { page ->
+                    Column(Modifier.fillMaxSize()) {
+                        when (page) {
+                            0 -> {
+                                //TITLE
+                                Text(
+                                    text = stringResource(Res.string.welcome).capitalize(Locale.current) + "!",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                //BODY TEXT
+                                Text(
+                                    text = page1BodyText,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                //endregion
+                            }
+                            1 -> {
+                                //TITLE
+                                Text(
+                                    text = stringResource(Res.string.give_storage_name),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(Modifier.height(24.dp))
+                                //region STORAGE TEXTFIELD
+                                DialogOutlinedTextField(
+                                    value = storageName,
+                                    onValueChange = { storageName = it },
+                                    placeholder = stringResource(Res.string.ex) + " " + stringResource(Res.string.storage_name_example),
+                                )
+                                //endregion
+                            }
+                        }
+                        Spacer(Modifier.weight(1f))
+                        //region PREMIUM
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(24.dp)
+                                )
+                                .border(
+                                    width = 1.5.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(24.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.welcome_dialog_premium_body),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .padding(bottom = 12.dp)
+                            )
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.premium_icon),
+                                contentDescription = null,
+                                tint = PremiumGold,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.BottomEnd)
+                            )
+                        }
+                        //endregion
+                        Spacer(Modifier.height(24.dp))
+                    }
+                }
+
+                //region PAGE + OK
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    //Page
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        PagerIndicator(
+                            pageCount = pageCount,
+                            currentPage = pagerState.currentPage,
+                            currentPageOffsetFraction = pagerState.currentPageOffsetFraction,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
+                    //OK
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.ok),
+                            color = if (isValid && storageName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { onConfirm(Storage(name = storageName)) }
+                        )
+                    }
+                }
+                //endregion
+            }
+        }
+    }
+}
+
+@Composable
+fun PagerIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier,
+    currentPageOffsetFraction: Float = 0f
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        repeat(pageCount) { page ->
+            val isSelected = page == currentPage
+            val isNextSelected = page == currentPage + 1
+
+            // Calculate width based on scroll offset
+            val width by animateDpAsState(
+                targetValue = when {
+                    isSelected -> 24.dp - (currentPageOffsetFraction * 16).dp
+                    isNextSelected -> 8.dp + (currentPageOffsetFraction * 16).dp
+                    else -> 8.dp
+                },
+                animationSpec = tween(durationMillis = 300),
+                label = "dot_width"
+            )
+
+            // Calculate alpha based on scroll offset
+            val alpha = when {
+                isSelected -> 1f - (currentPageOffsetFraction * 0.7f)
+                isNextSelected -> 0.3f + (currentPageOffsetFraction * 0.7f)
+                else -> 0.3f
+            }
+
+            Box(
+                modifier = Modifier
+                    .width(width)
+                    .height(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalTime::class)
