@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -88,6 +87,7 @@ import vault.composeapp.generated.resources.ex
 import vault.composeapp.generated.resources.give_storage_name
 import vault.composeapp.generated.resources.months
 import vault.composeapp.generated.resources.ok
+import vault.composeapp.generated.resources.optional
 import vault.composeapp.generated.resources.premium_icon
 import vault.composeapp.generated.resources.product_name
 import vault.composeapp.generated.resources.remind_me
@@ -194,7 +194,7 @@ fun AddProductDialog(
                 DialogOutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    placeholder = stringResource(Res.string.description),
+                    placeholder = stringResource(Res.string.description) + " - " + stringResource(Res.string.optional),
                     singleLine = false,
                     minLines = 3,
                     modifier = Modifier
@@ -335,7 +335,7 @@ fun AddProductDialog(
                                 value = container?.name ?: "",
                                 onValueChange = { /* READ ONLY */ },
                                 readOnly = true,
-                                placeholder = "",
+                                placeholder = stringResource(Res.string.optional),
                                 trailingIcon = {
                                     Icon(vectorResource(
                                         if (showContainerPicker) Res.drawable.dropdown_open_icon
