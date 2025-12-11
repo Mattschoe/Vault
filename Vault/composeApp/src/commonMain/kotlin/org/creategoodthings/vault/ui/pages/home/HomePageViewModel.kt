@@ -3,7 +3,6 @@ package org.creategoodthings.vault.ui.pages.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -51,7 +50,7 @@ class HomePageViewModel(
     )
 
 
-    fun insertProduct(product: Product) {
+    fun addProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.insertProduct(product)
         }

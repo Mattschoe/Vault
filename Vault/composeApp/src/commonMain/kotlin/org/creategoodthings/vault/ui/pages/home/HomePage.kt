@@ -61,7 +61,6 @@ import org.creategoodthings.vault.ui.pages.PageShell
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.Loading
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.NoneSelected
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.Success
-import org.creategoodthings.vault.ui.theme.MustardContainer
 import org.creategoodthings.vault.ui.theme.MustardWarning
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -77,7 +76,6 @@ import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.products
 import vault.composeapp.generated.resources.settings
 import vault.composeapp.generated.resources.settings_icon
-import vault.composeapp.generated.resources.total
 import vault.composeapp.generated.resources.welcome
 import kotlin.math.min
 
@@ -184,13 +182,14 @@ fun HomePage(
     if (showAddProductDialog) {
         AddProductDialog(
             onClick = {
-                viewModel.insertProduct(it)
+                viewModel.addProduct(it)
                 showAddProductDialog = false
             },
             onDismiss = { showAddProductDialog = false },
             storage2Containers = storage2Containers,
             onAddStorage = { viewModel.addStorage(it) },
-            onAddContainer = { viewModel.addContainer(it) }
+            onAddContainer = { viewModel.addContainer(it) },
+            selectedStorage = (selectedStorage as? Success)?.data?.storage
         )
     }
     //endregion

@@ -87,7 +87,8 @@ fun AddProductDialog(
     onDismiss: () -> Unit,
     storage2Containers: Map<Storage, List<Container>>,
     onAddStorage: (Storage) -> Unit,
-    onAddContainer: (Container) -> Unit
+    onAddContainer: (Container) -> Unit,
+    selectedStorage: Storage? = null
 ) {
     val spacingBetweenSections = 6.dp
     var showAddStorage by remember { mutableStateOf(false) }
@@ -101,7 +102,7 @@ fun AddProductDialog(
     val bestBefore = datePickerState.selectedDateMillis?.toLocalDate()
 
     var showStoragePicker by remember { mutableStateOf(false) }
-    var storage: Storage? by remember { mutableStateOf(null) }
+    var storage: Storage? by remember { mutableStateOf(selectedStorage) }
     var showContainerPicker by remember { mutableStateOf(false) }
     var container: Container? by remember { mutableStateOf(null) }
     var amount by remember { mutableStateOf("") }

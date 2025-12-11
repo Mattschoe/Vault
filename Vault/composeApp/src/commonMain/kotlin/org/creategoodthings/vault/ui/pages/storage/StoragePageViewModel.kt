@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -15,15 +17,38 @@ import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
+import org.creategoodthings.vault.ui.pages.home.StorageUIState
 import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class StoragePageViewModel(
     private val _storageID: String,
     private val _productRepo: ProductRepository,
-    private val _preferenceRepo: PreferencesRepository
+    private val _prefRepo: PreferencesRepository
 ): ViewModel() {
+    val storages = _productRepo.getStoragesWithContainersShell().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyMap()
+    )
 
-    private val _sortOption = _preferenceRepo.sortOption.map { option ->
+    private val _selectedStorageID = _prefRepo.standardStorageID
+    val selectedStorage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
+        if (ID == null) {
+            flowOf(StorageUIState.NoneSelected)
+        } else {
+            _productRepo.getStorageWithProducts(ID).map {
+                if (it != null) StorageUIState.Success(it)
+                else StorageUIState.NoneSelected
+            }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = StorageUIState.Loading
+    )
+
+    private val _sortOption = _prefRepo.sortOption.map { option ->
         when(option) {
             ALPHABET -> ALPHABET
             CONTAINER -> CONTAINER
@@ -83,13 +108,32 @@ class StoragePageViewModel(
             BEST_BEFORE -> ALPHABET
         }
         viewModelScope.launch {
-            _preferenceRepo.setSortOption(newOption)
+            _prefRepo.setSortOption(newOption)
         }
     }
 
     fun updateStorageName(newName: String) {
         viewModelScope.launch {
             _productRepo.updateStorage(Storage(ID = _storageID, name = newName))
+        }
+    }
+
+    fun addProduct(product: Product) {
+        viewModelScope.launch {
+            _productRepo.insertProduct(product)
+        }
+    }
+
+    fun addStorage(storage: Storage, changeToStore: Boolean = false) {
+        viewModelScope.launch {
+            _productRepo.insertStorage(storage)
+            if (changeToStore) _prefRepo.setStandardStorageID(storage.ID)
+        }
+    }
+
+    fun addContainer(container: Container) {
+        viewModelScope.launch {
+            _productRepo.insertContainer(container)
         }
     }
 

@@ -48,7 +48,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
@@ -61,9 +60,12 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.ui.components.AddProductDialog
+import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.DraggableProductCard
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.pages.PageShell
+import org.creategoodthings.vault.ui.pages.home.StorageUIState.*
 import org.creategoodthings.vault.ui.pages.storage.ProductListData.Flat
 import org.creategoodthings.vault.ui.pages.storage.ProductListData.Grouped
 import org.creategoodthings.vault.ui.pages.storage.SortOption.ALPHABET
@@ -91,6 +93,10 @@ fun StoragePage(
     viewModel:  StoragePageViewModel,
     modifier: Modifier = Modifier,
 ) {
+    var showAddProductDialog by remember { mutableStateOf(false) }
+    val storage2Containers by viewModel.storages.collectAsState()
+    val selectedStorage by viewModel.selectedStorage.collectAsState()
+
     val sortOption by viewModel.sortOption.collectAsState()
     val storageName by viewModel.storageName.collectAsState()
     val state by viewModel.products.collectAsState()
@@ -105,7 +111,6 @@ fun StoragePage(
     var dragState by remember { mutableStateOf(DragState()) }
     val dropZones = remember { mutableStateMapOf<String, DropZone>() }
     var hoveredContainerID by remember { mutableStateOf<String?>(null) }
-
     LaunchedEffect(dragState.dragOffset, dragState.isDragging) {
         hoveredContainerID = if (dragState.isDragging) {
             val cardCenterX = dragState.dragOffset.x + (dragState.itemSize.width / 2f)
@@ -121,6 +126,11 @@ fun StoragePage(
     }
 
     PageShell(
+        floatingActionButton = {
+            AddProductFAB(
+                onClick = { showAddProductDialog = true }
+            )
+        },
         modifier = modifier,
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -420,6 +430,22 @@ fun StoragePage(
             //endregion
         }
     }
+
+    //region DIALOGS
+    if (showAddProductDialog && selectedStorage is Success) {
+        AddProductDialog(
+            onClick = {
+                viewModel.addProduct(it)
+                showAddProductDialog = false
+            },
+            onDismiss = { showAddProductDialog = false },
+            storage2Containers = storage2Containers,
+            onAddStorage = { viewModel.addStorage(it) },
+            onAddContainer = { viewModel.addContainer(it) },
+            selectedStorage = (selectedStorage as Success).data.storage
+        )
+    }
+    //endregion
 }
 
 
