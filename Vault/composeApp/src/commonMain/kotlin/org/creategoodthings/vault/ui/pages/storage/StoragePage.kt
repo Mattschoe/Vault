@@ -1,14 +1,25 @@
 package org.creategoodthings.vault.ui.pages.storage
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -21,39 +32,58 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
+import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.ui.components.DraggableProductCard
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.pages.PageShell
+import org.creategoodthings.vault.ui.pages.storage.ProductListData.Flat
+import org.creategoodthings.vault.ui.pages.storage.ProductListData.Grouped
+import org.creategoodthings.vault.ui.pages.storage.SortOption.ALPHABET
+import org.creategoodthings.vault.ui.pages.storage.SortOption.BEST_BEFORE
+import org.creategoodthings.vault.ui.pages.storage.SortOption.CONTAINER
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
-import vault.composeapp.generated.resources.edit
-import vault.composeapp.generated.resources.edit_icon
-import org.creategoodthings.vault.ui.pages.storage.ProductListData.*
-import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 import vault.composeapp.generated.resources.alphabet_icon
 import vault.composeapp.generated.resources.calendar_icon
 import vault.composeapp.generated.resources.category_icon
 import vault.composeapp.generated.resources.check_icon
-import vault.composeapp.generated.resources.ok
+import vault.composeapp.generated.resources.edit
+import vault.composeapp.generated.resources.edit_icon
+import vault.composeapp.generated.resources.place_item_icon
 import vault.composeapp.generated.resources.sorted_alphabetically
 import vault.composeapp.generated.resources.sorted_bb
 import vault.composeapp.generated.resources.sorted_containers
 import vault.composeapp.generated.resources.unorganized
+import kotlin.math.roundToInt
 
 @Composable
 fun StoragePage(
@@ -71,149 +101,152 @@ fun StoragePage(
     var editStorageName by remember { mutableStateOf(false) }
     var newStorageName by remember(storageName) { mutableStateOf(storageName) }
 
+    //DRAG STATE
+    var dragState by remember { mutableStateOf(DragState()) }
+    val dropZones = remember { mutableStateMapOf<String, DropZone>() }
+    var hoveredContainerID by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(dragState.dragOffset, dragState.isDragging) {
+        hoveredContainerID = if (dragState.isDragging) {
+            val cardCenterX = dragState.dragOffset.x + (dragState.itemSize.width / 2f)
+            val cardCenterY = dragState.dragOffset.y + (dragState.itemSize.height / 2f)
+            val cardCenter = Offset(cardCenterX, cardCenterY)
+
+            dropZones.values.firstOrNull { zone ->
+                zone.bounds.contains(cardCenter)
+            }?.containerID
+        } else {
+            null
+        }
+    }
+
     PageShell(
         modifier = modifier,
     ) { padding ->
-        LazyColumn(
-            contentPadding = padding,
-            modifier = modifier
-        ) {
-            //region TITEL + SORT ORDER
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            //region LIST
+            LazyColumn(
+                contentPadding = padding,
+                modifier = modifier
+            ) {
+                //region TITEL + SORT ORDER
+                item {
                     Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (editStorageName) {
-                            OutlinedTextField(
-                                value = newStorageName,
-                                onValueChange = { newStorageName = it },
-                                textStyle = MaterialTheme.typography.headlineLarge,
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        editStorageName = false
-                                        hasInitialFocus = false
-                                        viewModel.updateStorageName(newStorageName)
-                                        focusManager.clearFocus()
-                                    }
-                                ),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = MaterialTheme.colorScheme.primary,
-                                ),
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (editStorageName) {
+                                OutlinedTextField(
+                                    value = newStorageName,
+                                    onValueChange = { newStorageName = it },
+                                    textStyle = MaterialTheme.typography.headlineLarge,
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = {
                                             editStorageName = false
                                             hasInitialFocus = false
                                             viewModel.updateStorageName(newStorageName)
                                             focusManager.clearFocus()
                                         }
-                                    ) {
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.check_icon),
-                                            contentDescription = stringResource(Res.string.edit),
-                                            modifier = Modifier
-                                                .size(48.dp)
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .focusRequester(focusRequester)
-                                    .onFocusChanged { focusState ->
-                                        if (focusState.isFocused) {
-                                            hasInitialFocus = true
-                                        } else if (hasInitialFocus) {
-                                            editStorageName = false
-                                            hasInitialFocus = false
-                                            viewModel.updateStorageName(newStorageName)
+                                    ),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = MaterialTheme.colorScheme.primary,
+                                    ),
+                                    trailingIcon = {
+                                        IconButton(
+                                            onClick = {
+                                                editStorageName = false
+                                                hasInitialFocus = false
+                                                viewModel.updateStorageName(newStorageName)
+                                                focusManager.clearFocus()
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = vectorResource(Res.drawable.check_icon),
+                                                contentDescription = stringResource(Res.string.edit),
+                                                modifier = Modifier
+                                                    .size(48.dp)
+                                            )
                                         }
-                                    }
-                            )
-                            LaunchedEffect(Unit) {
-                                delay(50)
-                                focusRequester.requestFocus()
-                            }
-                        } else {
-                            Text(
-                                text = storageName,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier
-                                    .clickable {
+                                    },
+                                    modifier = Modifier
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged { focusState ->
+                                            if (focusState.isFocused) {
+                                                hasInitialFocus = true
+                                            } else if (hasInitialFocus) {
+                                                editStorageName = false
+                                                hasInitialFocus = false
+                                                viewModel.updateStorageName(newStorageName)
+                                            }
+                                        }
+                                )
+                                LaunchedEffect(Unit) {
+                                    delay(50)
+                                    focusRequester.requestFocus()
+                                }
+                            } else {
+                                Text(
+                                    text = storageName,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    modifier = Modifier
+                                        .clickable {
+                                            editStorageName = true
+                                            hasInitialFocus = false
+                                        }
+                                )
+                                IconButton(
+                                    onClick = {
                                         editStorageName = true
                                         hasInitialFocus = false
-                                    }
-                            )
-                            IconButton(
-                                onClick = {
-                                    editStorageName = true
-                                    hasInitialFocus = false
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = vectorResource(Res.drawable.edit_icon),
-                                    contentDescription = stringResource(Res.string.edit),
-                                )
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.edit_icon),
+                                        contentDescription = stringResource(Res.string.edit),
+                                    )
+                                }
                             }
                         }
-                    }
-                    Icon(
-                        imageVector = vectorResource(
-                            when (sortOption) {
-                                ALPHABET -> Res.drawable.alphabet_icon
-                                BEST_BEFORE -> Res.drawable.calendar_icon
-                                CONTAINER -> Res.drawable.category_icon
-                            }
-                        ),
-                        contentDescription = stringResource(
-                            when (sortOption) {
-                                ALPHABET -> Res.string.sorted_alphabetically
-                                BEST_BEFORE -> Res.string.sorted_bb
-                                CONTAINER -> Res.string.sorted_containers
-                            }
-                        ),
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clickable { viewModel.toggleBetweenSortOption() }
-                    )
-                }
-            }
-            //endregion
-
-            item {
-                Spacer(Modifier.height(48.dp))
-            }
-
-            when (val state = state) {
-                is Flat -> {
-                    items(
-                        items = state.products,
-                        key = { it.ID }
-                    ) { product ->
-                        ProductCard(
-                            product = product,
+                        Icon(
+                            imageVector = vectorResource(
+                                when (sortOption) {
+                                    ALPHABET -> Res.drawable.alphabet_icon
+                                    BEST_BEFORE -> Res.drawable.calendar_icon
+                                    CONTAINER -> Res.drawable.category_icon
+                                }
+                            ),
+                            contentDescription = stringResource(
+                                when (sortOption) {
+                                    ALPHABET -> Res.string.sorted_alphabetically
+                                    BEST_BEFORE -> Res.string.sorted_bb
+                                    CONTAINER -> Res.string.sorted_containers
+                                }
+                            ),
                             modifier = Modifier
-                                .animateItem()
+                                .size(48.dp)
+                                .clickable { viewModel.toggleBetweenSortOption() }
                         )
                     }
                 }
+                //endregion
 
-                is Grouped -> {
-                    state.groups.forEach { (container, products) ->
-                        item(key = container.ID) {
-                            ContainerText(container.name)
-                            Spacer(Modifier.height(4.dp))
-                        }
+                item {
+                    Spacer(Modifier.height(48.dp))
+                }
+
+                when (val state = state) {
+                    is Flat -> {
                         items(
-                            items = products,
+                            items = state.products,
                             key = { it.ID }
                         ) { product ->
                             ProductCard(
@@ -222,36 +255,251 @@ fun StoragePage(
                                     .animateItem()
                             )
                         }
-                        item {
-                            Spacer(Modifier.height(24.dp))
-                        }
                     }
 
-                    item {
-                        ContainerText(stringResource(Res.string.unorganized))
-                    }
-                    items(
-                        items = state.unOrganizedProducts,
-                        key = { it.ID }
-                    ) { product ->
-                        ProductCard(
-                            product = product,
-                            modifier = Modifier
-                                .animateItem()
-                        )
+
+                    is Grouped -> {
+                        state.groups.forEach { (container, products) ->
+
+                            item(key = container.ID) {
+                                DroppableContainerSection(
+                                    isHovered = hoveredContainerID == container.ID && hoveredContainerID != dragState.draggedProduct?.containerID,
+                                    isDragging = dragState.isDragging,
+                                    onBoundsChanged = { bounds ->
+                                        dropZones[container.ID] = DropZone(
+                                            containerID = container.ID,
+                                            container = container,
+                                            bounds = bounds
+                                        )
+                                    },
+                                    label = container.name
+                                )
+                            }
+                            items(
+                                items = products,
+                                key = { it.ID }
+                            ) { product ->
+                                val isBeingDragged = dragState.draggedProduct?.ID == product.ID
+                                var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
+                                var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
+
+                                Box(
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .alpha(if (isBeingDragged) 0f else 1f)
+                                        .onGloballyPositioned { coords ->
+                                            draggedItemPositionInRoot = coords.positionInRoot()
+                                            draggedItemSize = coords.size
+                                        }
+                                ) {
+                                    DraggableProductCard(
+                                        product = product,
+                                        onDragStart = {
+                                            dragState = DragState(
+                                                draggedProduct = product,
+                                                dragOffset = draggedItemPositionInRoot,
+                                                itemSize = draggedItemSize,
+                                                isDragging = true
+                                            )
+                                        },
+                                        onDrag = { dragState = dragState.copy(dragOffset = dragState.dragOffset + it) },
+                                        onDragEnd = {
+                                            hoveredContainerID?.let { containerID ->
+                                                val dropZone = dropZones[containerID]
+                                                dragState.draggedProduct?.let { product ->
+                                                    viewModel.changeProductContainer(product, dropZone?.container)
+                                                }
+                                            }
+                                            dragState = DragState()
+                                        }
+                                    )
+                                }
+                            }
+                            item {
+                                Spacer(Modifier.height(24.dp))
+                            }
+                        }
+
+                        if (state.unorganizedProducts.isNotEmpty()) {
+                            item(key = "unorganized_container") {
+                                DroppableContainerSection(
+                                    isHovered = hoveredContainerID == "unorganized"  && hoveredContainerID != dragState.draggedProduct?.containerID,
+                                    isDragging = dragState.isDragging,
+                                    onBoundsChanged = { bounds ->
+                                        dropZones["unorganized"] = DropZone(
+                                            containerID = "unorganized",
+                                            container = null,
+                                            bounds = bounds
+                                        )
+                                    },
+                                    label = stringResource(Res.string.unorganized)
+                                )
+                            }
+
+                            items(
+                                items = state.unorganizedProducts,
+                                key = { it.ID }
+                            ) { product ->
+                                val isBeingDragged = dragState.draggedProduct?.ID == product.ID
+                                var myItemPosition by remember { mutableStateOf(Offset.Zero) }
+                                var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
+
+                                Box(
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .alpha(if (isBeingDragged) 0f else 1f)
+                                        .onGloballyPositioned { coords ->
+                                            myItemPosition = coords.positionInRoot()
+                                            draggedItemSize = coords.size
+                                        }
+                                ) {
+                                    DraggableProductCard(
+                                        product = product,
+                                        onDragStart = {
+                                            dragState = DragState(
+                                                draggedProduct = product,
+                                                dragOffset = myItemPosition,
+                                                itemSize = draggedItemSize,
+                                                isDragging = true
+                                            )
+                                        },
+                                        onDrag = { change ->
+                                            dragState = dragState.copy(dragOffset = dragState.dragOffset + change)
+                                        },
+                                        onDragEnd = {
+                                            hoveredContainerID?.let { containerID ->
+                                                val dropZone = dropZones[containerID]
+                                                dragState.draggedProduct?.let { product ->
+                                                    viewModel.changeProductContainer(
+                                                        product,
+                                                        dropZone?.container
+                                                    )
+                                                }
+                                            }
+                                            dragState = DragState()
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+            }
+            //endregion
+            //region PRODUCT GHOST OVERLAY
+            if (dragState.isDragging) {
+                dragState.draggedProduct?.let { product ->
+                    val scale by animateFloatAsState(
+                        targetValue = 1.05f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+
+                    ProductCard(
+                        product = product,
+                        modifier = Modifier
+                            .offset {
+                                IntOffset(
+                                    dragState.dragOffset.x.roundToInt(),
+                                    dragState.dragOffset.y.roundToInt()
+                                )
+                            }
+                            .graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                                rotationZ = 1f
+                            }
+                            .width(300.dp)
+                            .shadow(elevation = 16.dp, shape = RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                    )
+                }
+            }
+            //endregion
+        }
+    }
+}
+
+
+
+@Composable
+fun DroppableContainerSection(
+    isHovered: Boolean,
+    isDragging: Boolean,
+    onBoundsChanged: (Rect) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String
+) {
+    val outlineShape = remember { RoundedCornerShape(24.dp) }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { coords ->
+                val positionInRoot = coords.positionInRoot()
+                val size = coords.size
+                onBoundsChanged(
+                    Rect(
+                        offset = positionInRoot,
+                        size = Size(size.width.toFloat(), size.height.toFloat())
+                    )
+                )
+            }
+            .background(
+                color = if (isHovered && isDragging) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                else Color.Transparent,
+                shape = outlineShape
+            )
+            .border(
+                width = 2.dp,
+                color = if (isHovered && isDragging) MaterialTheme.colorScheme.primary
+                        else Color.Transparent,
+                shape = outlineShape
+            )
+            .padding(vertical = 8.dp, horizontal = 12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = label,
+                color = if (isHovered && isDragging) MaterialTheme.colorScheme.primary
+                        else Color.Gray,
+                fontWeight = if (isHovered && isDragging) FontWeight.ExtraBold
+                             else FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            if (isHovered && isDragging) {
+                Spacer(Modifier.width(8.dp))
+                Icon(
+                    imageVector = vectorResource(Res.drawable.place_item_icon),
+                    contentDescription = null, //TODO: Change to "Drop here"
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .alpha(if (isHovered && isDragging) 1f else 0f)
+                )
             }
         }
     }
 }
 
-@Composable
-fun ContainerText(text: String) {
-    Text(
-        text = text,
-        color = Color.Gray,
-        fontWeight = FontWeight.Bold,
-        style = MaterialTheme.typography.bodyLarge
-    )
-}
+/// Drag state holder
+data class DragState(
+    val draggedProduct: Product? = null,
+    val dragOffset: Offset = Offset.Zero,
+    val itemSize: IntSize = IntSize.Zero,
+    val isDragging: Boolean = false
+)
+
+/// Container drop zone data
+data class DropZone(
+    val containerID: String,
+    val container: Container?,
+    val bounds: Rect
+)

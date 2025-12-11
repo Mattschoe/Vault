@@ -2,7 +2,6 @@ package org.creategoodthings.vault.ui.pages.storage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -10,6 +9,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
@@ -92,12 +92,22 @@ class StoragePageViewModel(
             _productRepo.updateStorage(Storage(ID = _storageID, name = newName))
         }
     }
+
+    /**
+     * Changes the container which a product belongs to.
+     * @param newContainer if passed null, will remove the container from the product (effectively moving it into "unorganized")
+     */
+    fun changeProductContainer(product: Product, newContainer: Container?) {
+        viewModelScope.launch {
+            _productRepo.updateProduct(product.copy(containerID = newContainer?.ID))
+        }
+    }
 }
 
 sealed interface ProductListData {
     data class Grouped(
         val groups: List<ContainerWithProducts>,
-        val unOrganizedProducts: List<Product>
+        val unorganizedProducts: List<Product>
     ) : ProductListData
     data class Flat(val products: List<Product>) : ProductListData
 }

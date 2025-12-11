@@ -50,6 +50,21 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         ))
     }
 
+    override suspend fun updateProduct(product: Product) {
+        dao.updateProduct(ProductEntity(
+            ID = product.ID,
+            storageID = product.storageID,
+            containerID = product.containerID,
+            name = product.name,
+            description = product.description,
+            bestBeforeDate = product.bestBefore,
+            reminderDate = product.reminderDate,
+            amount = product.amount,
+            isDirty = true,
+            isDeleted = false
+        ))
+    }
+
     override suspend fun updateStorage(storage: Storage) {
         dao.updateStorage(StorageEntity(
             ID = storage.ID,

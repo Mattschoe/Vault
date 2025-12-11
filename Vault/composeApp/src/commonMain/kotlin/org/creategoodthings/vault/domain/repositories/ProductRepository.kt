@@ -13,6 +13,7 @@ interface ProductRepository {
     suspend fun insertStorage(storage: Storage)
     suspend fun insertContainer(container: Container)
 
+    suspend fun updateProduct(product: Product)
     suspend fun updateStorage(storage: Storage)
 
     fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
