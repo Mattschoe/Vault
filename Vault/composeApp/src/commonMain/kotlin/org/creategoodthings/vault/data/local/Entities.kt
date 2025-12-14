@@ -65,21 +65,3 @@ data class ContainerEntity(
     val isDirty: Boolean,
     val isDeleted: Boolean
 )
-
-data class StorageWithProductsEntity(
-    @Embedded val storage: StorageEntity,
-    @Relation(
-        parentColumn = "ID",
-        entityColumn = "storageID"
-    )
-    val products: List<ProductEntity>
-)
-
-data class ContainerWithProductsEntity(
-    @Embedded val container: ContainerEntity,
-    @Relation(
-        parentColumn = "ID",
-        entityColumn = "containerID"
-    )
-    val products: List<ProductEntity>
-)

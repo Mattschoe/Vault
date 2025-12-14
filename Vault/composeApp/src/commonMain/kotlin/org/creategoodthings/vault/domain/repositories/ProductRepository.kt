@@ -2,7 +2,6 @@ package org.creategoodthings.vault.domain.repositories
 
 import kotlinx.coroutines.flow.Flow
 import org.creategoodthings.vault.data.local.ContainerEntity
-import org.creategoodthings.vault.data.local.ContainerWithProductsEntity
 import org.creategoodthings.vault.data.local.ProductEntity
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
@@ -15,6 +14,8 @@ interface ProductRepository {
 
     suspend fun updateProduct(product: Product)
     suspend fun updateStorage(storage: Storage)
+
+    suspend fun deleteProduct(product: Product)
 
     fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>>
     fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?>

@@ -137,7 +137,7 @@ fun AddProductDialog(
     }
 
     val isValid =
-        amount.toIntOrNull().let { true } &&
+        amount.toIntOrNull() != null &&
         productName.trim().isNotEmpty() &&
         bestBefore?.isAfterToday() ?: false &&
         remindMeDate != null &&

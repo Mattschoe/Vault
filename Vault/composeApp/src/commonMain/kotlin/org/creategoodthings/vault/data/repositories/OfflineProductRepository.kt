@@ -3,7 +3,6 @@ package org.creategoodthings.vault.data.repositories
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.creategoodthings.vault.data.local.ContainerEntity
-import org.creategoodthings.vault.data.local.ContainerWithProductsEntity
 import org.creategoodthings.vault.data.local.ProductDao
 import org.creategoodthings.vault.data.local.ProductEntity
 import org.creategoodthings.vault.data.local.StorageEntity
@@ -74,6 +73,10 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         ))
     }
 
+    override suspend fun deleteProduct(product: Product) {
+        dao.deleteProduct(product.ID)
+    }
+
     override fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>> {
         return dao.getStoragesWithContainersShell().map { entity ->
             entity.map { (storageEntity, containersEntity) ->
@@ -94,14 +97,14 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     }
 
     override fun getStorageWithProducts(storageID: String): Flow<StorageWithProducts?> {
-        return dao.getStorageWithProducts(storageID).map { entity ->
-            entity?.let {
+        return dao.getStorageWithProducts(storageID).map { map ->
+            map.entries.firstOrNull()?.let { (storageEntity, productEntities) ->
                 StorageWithProducts(
                     storage = Storage(
-                        ID = entity.storage.ID,
-                        name = entity.storage.name
+                        ID = storageEntity.ID,
+                        name = storageEntity.name
                     ),
-                    products = entity.products.map { it.toDomain() }
+                    products = productEntities.map { it.toDomain() }
                 )
             }
         }
@@ -114,11 +117,15 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     }
 
     override fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<List<ContainerWithProducts>> {
-        return dao.getStorageContainersWithProducts(storageID).map { entity ->
-            entity.map { (container, products) ->
+        return dao.getStorageContainersWithProducts(storageID).map { map ->
+            map.map { (containerEntity, productEntities) ->
                 ContainerWithProducts(
-                    container = container.toDomain(),
-                    products = products.map { it.toDomain() }
+                    container = Container(
+                        ID = containerEntity.ID,
+                        storageID = containerEntity.storageID,
+                        name = containerEntity.name
+                    ),
+                    products = productEntities.map { it.toDomain() }
                 )
             }
         }

@@ -124,6 +124,12 @@ class StoragePageViewModel(
         }
     }
 
+    fun deleteProduct(product: Product) {
+        viewModelScope.launch {
+            _productRepo.deleteProduct(product)
+        }
+    }
+
     fun addStorage(storage: Storage, changeToStore: Boolean = false) {
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
