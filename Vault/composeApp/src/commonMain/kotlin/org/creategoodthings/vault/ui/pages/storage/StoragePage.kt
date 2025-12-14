@@ -64,7 +64,9 @@ import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
+import org.creategoodthings.vault.ui.components.DragState
 import org.creategoodthings.vault.ui.components.DraggableProductCard
+import org.creategoodthings.vault.ui.components.DropZone
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.*
@@ -114,7 +116,6 @@ fun StoragePage(
     var dragState by remember { mutableStateOf(DragState()) }
     val dropZones = remember { mutableStateMapOf<String, DropZone>() }
     var hoveredContainerID by remember { mutableStateOf<String?>(null) }
-    var hoveringOverTrashcan by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     LaunchedEffect(dragState.dragOffset, dragState.isDragging) {
         hoveredContainerID = if (dragState.isDragging) {
@@ -155,7 +156,6 @@ fun StoragePage(
             //region LIST
             LazyColumn(
                 contentPadding = padding,
-                modifier = modifier
             ) {
                 //region TITEL + SORT ORDER
                 item {
@@ -473,7 +473,10 @@ fun StoragePage(
                                 val center = positionInRoot + Offset(size.width/2f, size.height/2f)
                                 dropZones["trashcan"] = DropZone(
                                     zoneID = "trashcan",
-                                    bounds = Rect(offset = positionInRoot, size = Size(size.width.toFloat(), size.height.toFloat())),
+                                    bounds = Rect(
+                                        offset = positionInRoot,
+                                        size = Size(size.width.toFloat(), size.height.toFloat())
+                                    ),
                                     center = center
                                 )
                             }
@@ -584,19 +587,3 @@ fun DroppableContainerSection(
         }
     }
 }
-
-/// Drag state holder
-data class DragState(
-    val draggedProduct: Product? = null,
-    val dragOffset: Offset = Offset.Zero,
-    val itemSize: IntSize = IntSize.Zero,
-    val isDragging: Boolean = false
-)
-
-/// Container drop zone data
-data class DropZone(
-    val zoneID: String,
-    val container: Container? = null,
-    val bounds: Rect,
-    val center: Offset = Offset.Zero
-)

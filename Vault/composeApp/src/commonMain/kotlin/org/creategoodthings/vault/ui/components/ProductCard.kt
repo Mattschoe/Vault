@@ -25,15 +25,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month.*
+import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.creategoodthings.vault.ui.theme.MustardContainer
@@ -174,6 +177,22 @@ fun DraggableProductCard(
             }
     )
 }
+
+/// Drag state holder
+data class DragState(
+    val draggedProduct: Product? = null,
+    val dragOffset: Offset = Offset.Zero,
+    val itemSize: IntSize = IntSize.Zero,
+    val isDragging: Boolean = false
+)
+
+/// Container drop zone data
+data class DropZone(
+    val zoneID: String,
+    val container: Container? = null,
+    val bounds: Rect,
+    val center: Offset = Offset.Zero
+)
 
 /**
  * The state of the product, transports info like daysRemaining, textColor and backgroundColor

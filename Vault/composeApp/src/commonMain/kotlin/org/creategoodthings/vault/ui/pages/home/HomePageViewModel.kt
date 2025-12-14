@@ -61,6 +61,12 @@ class HomePageViewModel(
         }
     }
 
+    fun deleteProduct(product: Product) {
+        viewModelScope.launch {
+            _productRepo.deleteProduct(product)
+        }
+    }
+
     fun changeStorage(newStorage: Storage) {
         viewModelScope.launch {
             _preferencesRepo.setStandardStorageID(newStorage.ID)

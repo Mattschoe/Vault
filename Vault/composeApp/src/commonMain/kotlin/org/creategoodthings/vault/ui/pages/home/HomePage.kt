@@ -2,6 +2,9 @@ package org.creategoodthings.vault.ui.pages.home
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -15,8 +18,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -33,22 +38,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
@@ -56,6 +72,9 @@ import org.creategoodthings.vault.domain.calculateDaysRemaining
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.AddStorageDialog
+import org.creategoodthings.vault.ui.components.DragState
+import org.creategoodthings.vault.ui.components.DraggableProductCard
+import org.creategoodthings.vault.ui.components.DropZone
 import org.creategoodthings.vault.ui.components.ProductCard
 import org.creategoodthings.vault.ui.components.WelcomeDialog
 import org.creategoodthings.vault.ui.navigation.PageNavigation
@@ -78,8 +97,10 @@ import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.products
 import vault.composeapp.generated.resources.settings
 import vault.composeapp.generated.resources.settings_icon
+import vault.composeapp.generated.resources.trashcan_icon
 import vault.composeapp.generated.resources.welcome
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 @Composable
 fun HomePage(
@@ -89,6 +110,38 @@ fun HomePage(
 ) {
     val user = remember { "Matthias" }
     val dataState by viewModel.uiState.collectAsState()
+
+    //DRAG STATE
+    var dragState by remember { mutableStateOf(DragState()) }
+    val dropZones = remember { mutableStateMapOf<String, DropZone>() }
+    var hoveredContainerID by remember { mutableStateOf<String?>(null) }
+    val density = LocalDensity.current
+    LaunchedEffect(dragState.dragOffset, dragState.isDragging) {
+        hoveredContainerID = if (dragState.isDragging) {
+            val cardCenterX = dragState.dragOffset.x + (dragState.itemSize.width / 2f)
+            val cardCenterY = dragState.dragOffset.y + (dragState.itemSize.height / 2f)
+            val cardCenter = Offset(cardCenterX, cardCenterY)
+
+            //Check trashcan collision first
+            val trashZone = dropZones["trashcan"]
+            val distToTrash = if (trashZone != null) {
+                (trashZone.center - cardCenter).getDistance()
+            } else {
+                Float.MAX_VALUE
+            }
+            val acceptedRadius = with(density) { 75.dp.toPx() }
+            if (distToTrash < acceptedRadius) "trashcan"
+            else {
+                dropZones.values
+                    .filter { it.zoneID != "trashcan" }
+                    .firstOrNull { zone ->
+                        zone.bounds.contains(cardCenter)
+                    }?.zoneID
+            }
+        } else {
+            null
+        }
+    }
 
     when (val dataState = dataState) {
         is DataUIState.Loading -> {
@@ -123,78 +176,202 @@ fun HomePage(
                 },
                 modifier = modifier,
             ) { padding ->
-                LazyColumn(
-                    contentPadding = padding,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    //region TITEL
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = stringResource(Res.string.welcome) + ",",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.headlineLarge
-                                )
-                                Text(
-                                    text = user,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.headlineLarge
+                Box(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        contentPadding = padding,
+                    ) {
+                        //region TITEL
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = stringResource(Res.string.welcome) + ",",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.headlineLarge
+                                    )
+                                    Text(
+                                        text = user,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.headlineLarge
+                                    )
+                                }
+
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.settings_icon),
+                                    contentDescription = stringResource(Res.string.settings),
+                                    modifier = Modifier
+                                        .clickable { navController.navigate(PageNavigation.Settings) }
                                 )
                             }
+                        }
+                        //endregion
 
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.settings_icon),
-                                contentDescription = stringResource(Res.string.settings),
+                        //region STATUS
+                        item {
+                            StorageStatusCard(
+                                uiState = selectedStorage,
+                                storages = storage2Containers.keys.toList(),
+                                onStorageChosen = { viewModel.changeStorage(it) },
+                                onStorageAdded = {
+                                    viewModel.addStorage(it, true)
+                                },
                                 modifier = Modifier
-                                    .clickable { navController.navigate(PageNavigation.Settings) }
+                                    .clickable {
+                                        if (selectedStorage is Success) {
+                                            navController.navigate(
+                                                PageNavigation.Storage(
+                                                    selectedStorage.data.storage.ID
+                                                )
+                                            )
+                                        }
+                                    }
                             )
                         }
-                    }
-                    //endregion
+                        //endregion
 
-                    //region STATUS
-                    item {
-                        StorageStatusCard(
-                            uiState = selectedStorage,
-                            storages = storage2Containers.keys.toList(),
-                            onStorageChosen = { viewModel.changeStorage(it) },
-                            onStorageAdded = {
-                                viewModel.addStorage(it, true)
-                            },
-                            modifier = Modifier
-                                .clickable { if (selectedStorage is Success) {
-                                    navController.navigate(PageNavigation.Storage(selectedStorage.data.storage.ID))
-                                }}
-                        )
-                    }
-                    //endregion
+                        //region EXPIRES SOON
+                        item {
+                            Text(
+                                text = stringResource(Res.string.expires_next),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier
+                                    .padding(top = 12.dp)
+                            )
+                        }
+                        items(products) { product ->
+                            val isBeingDragged = dragState.draggedProduct?.ID == product.ID
+                            var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
+                            var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
 
-                    //region EXPIRES SOON
-                    item {
-                        Text(
-                            text = stringResource(Res.string.expires_next),
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier
-                                .padding(top = 12.dp)
-                        )
+                            Box(
+                                modifier = Modifier
+                                    .animateItem()
+                                    .alpha(if (isBeingDragged) 0f else 1f)
+                                    .onGloballyPositioned { coords ->
+                                        draggedItemPositionInRoot = coords.positionInRoot()
+                                        draggedItemSize = coords.size
+                                    }
+                            ) {
+                                DraggableProductCard(
+                                    product = product,
+                                    onDragStart = {
+                                        dragState = DragState(
+                                            draggedProduct = product,
+                                            dragOffset = draggedItemPositionInRoot,
+                                            itemSize = draggedItemSize,
+                                            isDragging = true
+                                        )
+                                    },
+                                    onDrag = { change ->
+                                        dragState =
+                                            dragState.copy(dragOffset = dragState.dragOffset + change)
+                                    },
+                                    onDragEnd = {
+                                        hoveredContainerID?.let { containerID ->
+                                            dragState.draggedProduct?.let { product ->
+                                                if (containerID == "trashcan") {
+                                                    viewModel.deleteProduct(product)
+                                                }
+                                            }
+                                        }
+                                        dragState = DragState()
+                                    },
+                                    modifier = Modifier
+                                        .clickable {
+                                            navController.navigate(
+                                                PageNavigation.Storage(
+                                                    product.storageID
+                                                )
+                                            )
+                                        }
+                                )
+                            }
+                        }
+                        //endregion
                     }
-                    items(products) { product ->
-                        ProductCard(
-                            product = product,
+                    //region DRAGGING
+                    if (dragState.isDragging) {
+                        //region PRODUCT CARD
+                        dragState.draggedProduct?.let { product ->
+                            val scale by animateFloatAsState(
+                                targetValue = 1.05f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            )
+
+                            ProductCard(
+                                product = product,
+                                modifier = Modifier
+                                    .offset {
+                                        IntOffset(
+                                            dragState.dragOffset.x.roundToInt(),
+                                            dragState.dragOffset.y.roundToInt()
+                                        )
+                                    }
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                        rotationZ = 1f
+                                    }
+                                    .width(300.dp)
+                                    .shadow(elevation = 16.dp, shape = RoundedCornerShape(24.dp))
+                                    .background(MaterialTheme.colorScheme.surface)
+                            )
+                        }
+                        //endregion
+
+                        //region TRASHCAN UI
+                        Box(
                             modifier = Modifier
-                                .clickable { navController.navigate(PageNavigation.Storage(product.storageID)) }
-                        )
+                                .fillMaxSize()
+                                .padding(bottom = 72.dp),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .onGloballyPositioned { coords ->
+                                        val positionInRoot = coords.positionInRoot()
+                                        val size = coords.size
+                                        val center = positionInRoot + Offset(size.width/2f, size.height/2f)
+                                        dropZones["trashcan"] = DropZone(
+                                            zoneID = "trashcan",
+                                            bounds = Rect(
+                                                offset = positionInRoot,
+                                                size = Size(size.width.toFloat(), size.height.toFloat())
+                                            ),
+                                            center = center
+                                        )
+                                    }
+                                    .size(96.dp)
+                                    .zIndex(0.9f)
+                            ) {
+                                val targetScale = if (hoveredContainerID == "trashcan") 1.12f else 1f
+                                val scaleAnimation by animateFloatAsState(targetScale)
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.trashcan_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            scaleX = scaleAnimation
+                                            scaleY = scaleAnimation
+                                        }
+                                )
+                            }
+                        }
+                        //endregion
                     }
                     //endregion
                 }
