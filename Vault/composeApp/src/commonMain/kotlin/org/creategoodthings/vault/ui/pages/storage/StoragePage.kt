@@ -277,11 +277,47 @@ fun StoragePage(
                             items = state.products,
                             key = { it.ID }
                         ) { product ->
-                            ProductCard(
-                                product = product,
+                            val isBeingDragged = dragState.draggedProduct?.ID == product.ID
+                            var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
+                            var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
+                            Box(
                                 modifier = Modifier
                                     .animateItem()
-                            )
+                                    .alpha(if (isBeingDragged) 0f else 1f)
+                                    .onGloballyPositioned { coords ->
+                                        draggedItemPositionInRoot = coords.positionInRoot()
+                                        draggedItemSize = coords.size
+                                    }
+                            ) {
+                                DraggableProductCard(
+                                    product = product,
+                                    onDragStart = {
+                                        dragState = DragState(
+                                            draggedProduct = product,
+                                            dragOffset = draggedItemPositionInRoot,
+                                            itemSize = draggedItemSize,
+                                            isDragging = true
+                                        )
+                                    },
+                                    onDrag = { dragState = dragState.copy(dragOffset = dragState.dragOffset + it) },
+                                    onDragEnd = {
+                                        hoveredContainerID?.let { containerID ->
+                                            val dropZone = dropZones[containerID]
+                                            dragState.draggedProduct?.let { product ->
+                                                if (containerID == "trashcan") {
+                                                    viewModel.deleteProduct(product)
+                                                } else {
+                                                    viewModel.changeProductContainer(
+                                                        product,
+                                                        dropZone?.container
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        dragState = DragState()
+                                    }
+                                )
+                            }
                         }
                     }
 
