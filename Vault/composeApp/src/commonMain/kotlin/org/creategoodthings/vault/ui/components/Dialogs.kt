@@ -668,7 +668,7 @@ fun DialogOutlinedTextField(
             fontStyle = FontStyle.Italic
         )},
         singleLine = singleLine,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -679,7 +679,7 @@ fun DialogOutlinedTextField(
         minLines = minLines,
         trailingIcon = trailingIcon,
         readOnly = readOnly,
-        keyboardOptions = keyboardOptions
+        keyboardOptions = keyboardOptions,
     )
 }
 

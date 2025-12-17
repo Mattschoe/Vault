@@ -54,4 +54,41 @@
     <string name="welcome_dialog_premium_body">Psst: Want to share your overview with others? Or keep the storage safe in the cloud? Then try our premium feature here!</string>
     <string name="storage_name_example">cupboard under closet</string>
     <string name="ex">Ex:</string>
+    <string name="items">item(s)</string>
+
+    <!-- SUGGESTED PRODUCTS -->
+    <string name="milk">Milk</string>
+    <string name="eggs">Eggs</string>
+    <string name="butter">Butter</string>
+    <string name="cream">Cream</string>
+    <string name="cheese">Cheese</string>
+    <string name="yoghurt">Yoghurt</string>
+    <string name="cold_cuts">Cold cuts</string>
+    <string name="juice">Juice</string>
+    <string name="chicken_breast">Chicken breast</string>
+    <string name="vegetables">Vegetables</string>
+    <string name="pizza">Pizza</string>
+    <string name="bread">Bread</string>
+    <string name="soup">Soup</string>
+    <string name="fries">Fries</string>
+    <string name="berries">Berries</string>
+    <string name="fish">Fish</string>
+    <string name="minced_beef">Minced beef</string>
+    <string name="minced_pork">Minced pork</string>
+    <string name="pasta">Pasta</string>
+    <string name="rice">Rice</string>
+    <string name="oatmeal">Oatmeal</string>
+    <string name="flour">Flour</string>
+    <string name="canned_tomato">Canned Tomato</string>
+    <string name="coffee">Coffee</string>
+    <string name="sugar">Sugar</string>
+    <string name="Oil">Oil</string>
+    <string name="canned_tuna">Canned tuna</string>
+    <string name="potatoes">Potatoes</string>
+    <string name="onion">Onion</string>
+    <string name="garlic">Garlic</string>
+    <string name="carrots">Carrots</string>
+    <string name="apples">Apples</string>
+    <string name="lemons">Lemons</string>
+    <string name="suggestions_bottom_text">Don't worry you can always change the naming or add more products later</string>
 </resources>

@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.1"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "36"
 androidx-activity = "1.12.0"
 androidx-appcompat = "1.7.1"
@@ -21,8 +21,11 @@ room = "2.8.4"
 sqlite = "2.6.2"
 ksp = "2.3.2"
 datastore = "1.2.0"
+workRuntime = "2.11.0"
 
 [libraries]
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntime" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
