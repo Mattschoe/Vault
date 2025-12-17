@@ -164,7 +164,6 @@ fun HomePage(
             val products = dataState.products
             val storage2Containers = dataState.storages
             val selectedStorage = dataState.selectedStorage
-            val noStorageSelected = remember(key1 = selectedStorage) { selectedStorage is NoneSelected }
             var showAddProductDialog by remember { mutableStateOf(false) }
 
             //region PAGESHELL UI
@@ -180,123 +179,135 @@ fun HomePage(
                     LazyColumn(
                         contentPadding = padding,
                     ) {
-                        //region TITEL
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = stringResource(Res.string.welcome) + ",",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.headlineLarge
-                                    )
-                                    Text(
-                                        text = user,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.headlineLarge
+                        when (selectedStorage) {
+                            Loading -> {
+                                item {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                            NoneSelected -> {
+                                navController.navigate(PageNavigation.Suggestions)
+                            }
+                            is Success -> {
+                                //region SUCCESS
+                                //region TITEL
+                                item {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = stringResource(Res.string.welcome) + ",",
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.headlineLarge
+                                            )
+                                            Text(
+                                                text = user,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.headlineLarge
+                                            )
+                                        }
+
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.settings_icon),
+                                            contentDescription = stringResource(Res.string.settings),
+                                            modifier = Modifier
+                                                .clickable { navController.navigate(PageNavigation.Settings) }
+                                        )
+                                    }
+                                }
+                                //endregion
+
+                                //region STATUS
+                                item {
+                                    StorageStatusCard(
+                                        uiState = selectedStorage,
+                                        storages = storage2Containers.keys.toList(),
+                                        onStorageChosen = { viewModel.changeStorage(it) },
+                                        onStorageAdded = {
+                                            viewModel.addStorage(it, true)
+                                        },
+                                        modifier = Modifier
+                                            .clickable {
+                                                navController.navigate(
+                                                    PageNavigation.Storage(
+                                                        selectedStorage.data.storage.ID
+                                                    )
+                                                )
+                                            }
                                     )
                                 }
+                                //endregion
 
-                                Icon(
-                                    imageVector = vectorResource(Res.drawable.settings_icon),
-                                    contentDescription = stringResource(Res.string.settings),
-                                    modifier = Modifier
-                                        .clickable { navController.navigate(PageNavigation.Settings) }
-                                )
-                            }
-                        }
-                        //endregion
+                                //region EXPIRES SOON
+                                item {
+                                    Text(
+                                        text = stringResource(Res.string.expires_next),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        modifier = Modifier
+                                            .padding(top = 12.dp)
+                                    )
+                                }
+                                items(products) { product ->
+                                    val isBeingDragged = dragState.draggedProduct?.ID == product.ID
+                                    var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
+                                    var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
 
-                        //region STATUS
-                        item {
-                            StorageStatusCard(
-                                uiState = selectedStorage,
-                                storages = storage2Containers.keys.toList(),
-                                onStorageChosen = { viewModel.changeStorage(it) },
-                                onStorageAdded = {
-                                    viewModel.addStorage(it, true)
-                                },
-                                modifier = Modifier
-                                    .clickable {
-                                        if (selectedStorage is Success) {
-                                            navController.navigate(
-                                                PageNavigation.Storage(
-                                                    selectedStorage.data.storage.ID
-                                                )
-                                            )
-                                        }
-                                    }
-                            )
-                        }
-                        //endregion
-
-                        //region EXPIRES SOON
-                        item {
-                            Text(
-                                text = stringResource(Res.string.expires_next),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.headlineSmall,
-                                modifier = Modifier
-                                    .padding(top = 12.dp)
-                            )
-                        }
-                        items(products) { product ->
-                            val isBeingDragged = dragState.draggedProduct?.ID == product.ID
-                            var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
-                            var draggedItemSize by remember { mutableStateOf(IntSize.Zero) }
-
-                            Box(
-                                modifier = Modifier
-                                    .animateItem()
-                                    .alpha(if (isBeingDragged) 0f else 1f)
-                                    .onGloballyPositioned { coords ->
-                                        draggedItemPositionInRoot = coords.positionInRoot()
-                                        draggedItemSize = coords.size
-                                    }
-                            ) {
-                                DraggableProductCard(
-                                    product = product,
-                                    onDragStart = {
-                                        dragState = DragState(
-                                            draggedProduct = product,
-                                            dragOffset = draggedItemPositionInRoot,
-                                            itemSize = draggedItemSize,
-                                            isDragging = true
-                                        )
-                                    },
-                                    onDrag = { change ->
-                                        dragState =
-                                            dragState.copy(dragOffset = dragState.dragOffset + change)
-                                    },
-                                    onDragEnd = {
-                                        hoveredContainerID?.let { containerID ->
-                                            dragState.draggedProduct?.let { product ->
-                                                if (containerID == "trashcan") {
-                                                    viewModel.deleteProduct(product)
-                                                }
+                                    Box(
+                                        modifier = Modifier
+                                            .animateItem()
+                                            .alpha(if (isBeingDragged) 0f else 1f)
+                                            .onGloballyPositioned { coords ->
+                                                draggedItemPositionInRoot = coords.positionInRoot()
+                                                draggedItemSize = coords.size
                                             }
-                                        }
-                                        dragState = DragState()
-                                    },
-                                    modifier = Modifier
-                                        .clickable {
-                                            navController.navigate(
-                                                PageNavigation.Storage(
-                                                    product.storageID
+                                    ) {
+                                        DraggableProductCard(
+                                            product = product,
+                                            onDragStart = {
+                                                dragState = DragState(
+                                                    draggedProduct = product,
+                                                    dragOffset = draggedItemPositionInRoot,
+                                                    itemSize = draggedItemSize,
+                                                    isDragging = true
                                                 )
-                                            )
-                                        }
-                                )
+                                            },
+                                            onDrag = { change ->
+                                                dragState =
+                                                    dragState.copy(dragOffset = dragState.dragOffset + change)
+                                            },
+                                            onDragEnd = {
+                                                hoveredContainerID?.let { containerID ->
+                                                    dragState.draggedProduct?.let { product ->
+                                                        if (containerID == "trashcan") {
+                                                            viewModel.deleteProduct(product)
+                                                        }
+                                                    }
+                                                }
+                                                dragState = DragState()
+                                            },
+                                            modifier = Modifier
+                                                .clickable {
+                                                    navController.navigate(
+                                                        PageNavigation.Storage(
+                                                            product.storageID
+                                                        )
+                                                    )
+                                                }
+                                        )
+                                    }
+                                }
+                                //endregion
+                                //endregion
                             }
                         }
-                        //endregion
                     }
                     //region DRAGGING
                     if (dragState.isDragging) {
@@ -390,12 +401,6 @@ fun HomePage(
                     onAddStorage = { viewModel.addStorage(it) },
                     onAddContainer = { viewModel.addContainer(it) },
                     selectedStorage = (selectedStorage as? Success)?.data?.storage
-                )
-            }
-
-            if (noStorageSelected) {
-                WelcomeDialog(
-                    onConfirm = { viewModel.addStorage(it, true) }
                 )
             }
             //endregion

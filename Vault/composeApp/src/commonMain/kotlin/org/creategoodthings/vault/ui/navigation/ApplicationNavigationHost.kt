@@ -14,6 +14,8 @@ import org.creategoodthings.vault.ui.pages.home.HomePage
 import org.creategoodthings.vault.ui.pages.home.HomePageViewModel
 import org.creategoodthings.vault.ui.pages.storage.StoragePage
 import org.creategoodthings.vault.ui.pages.storage.StoragePageViewModel
+import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPage
+import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPageViewModel
 
 @Composable
 fun ApplicationNavigationHost(
@@ -54,5 +56,19 @@ fun ApplicationNavigationHost(
         }
 
         //Settings
+
+        //Suggestions
+        composable<PageNavigation.Suggestions> {
+            val viewModel = viewModel<SuggestionsPageViewModel> {
+                SuggestionsPageViewModel(
+                    appContainer.productRepo,
+                    appContainer.preferencesRepository
+                )
+            }
+            SuggestionsPage(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
     }
 }

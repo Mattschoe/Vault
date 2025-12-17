@@ -12,7 +12,8 @@ import kotlin.uuid.Uuid
 /**
  * The UI/Front facing Product
  */
-data class Product @OptIn(ExperimentalUuidApi::class) constructor(
+@OptIn(ExperimentalUuidApi::class)
+data class Product(
     val ID: String = Uuid.random().toString(),
     val name: String,
     val amount: Int,

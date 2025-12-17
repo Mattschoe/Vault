@@ -60,14 +60,20 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.datetime.LocalDate
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.SuggestedProduct
 import org.creategoodthings.vault.domain.calculateDaysRemaining
+import org.creategoodthings.vault.ui.RemindMeType
+import org.creategoodthings.vault.ui.ToString
+import org.creategoodthings.vault.ui.calculateReminder
 import org.creategoodthings.vault.ui.theme.MustardContainer
 import org.creategoodthings.vault.ui.theme.OnMustardContainer
 import org.creategoodthings.vault.ui.toDisplayText
+import org.creategoodthings.vault.ui.toLocalDate
 import org.creategoodthings.vault.ui.toLocaleDisplayDate
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
@@ -206,274 +212,323 @@ fun DraggableProductCard(
     )
 }
 
-    @Composable
-    fun SuggestedProductCard(
-        product: SuggestedProduct,
-        onAdd: (Product) -> Unit,
-        modifier: Modifier = Modifier
-    ) {
-        var isExpanded by remember { mutableStateOf(false) }
-        var showDatePicker by remember { mutableStateOf(false) }
-        val datePickerState = rememberDatePickerState()
-        var amount by remember { mutableStateOf(1) }
-        var bestBefore by remember { mutableStateOf(datePickerState.selectedDateMillis?.toLocalDate() ?: product.suggestedBestBefore) }
-        var showRemindMePicker by remember { mutableStateOf(false) }
-        var remindMeType by remember { mutableStateOf(product.suggestedReminderType) }
-        var remindMeAmount by remember { mutableStateOf(product.suggestedReminderAmount.toString()) }
 
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            modifier = modifier
-                .padding(vertical = 4.dp)
-                .fillMaxWidth()
-                .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
+data class ProductDraft(
+    val ID: String,
+    val name: String,
+    val amount: Int,
+    val bestBefore: LocalDate,
+    val reminderDate: LocalDate
+)
+
+/**
+ * @param onRemove returns the ID of [ProductDraft], this function should be used to remove the product from the list of potentially added products
+ */
+@Composable
+fun SuggestedProductCard(
+    product: SuggestedProduct,
+    onAddOrUpdate: (ProductDraft) -> Unit,
+    onRemove: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val name = stringResource(product.nameID)
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    var amount by remember { mutableStateOf(1) }
+    var bestBefore by remember { mutableStateOf(datePickerState.selectedDateMillis?.toLocalDate() ?: product.suggestedBestBefore) }
+    var showRemindMePicker by remember { mutableStateOf(false) }
+    var remindMeType by remember { mutableStateOf(product.suggestedReminderType) }
+    var remindMeAmount by remember { mutableStateOf(product.suggestedReminderAmount.toString()) }
+    var isActivated by remember { mutableStateOf(false) }
+
+    fun createDraft(): ProductDraft? {
+        if (remindMeAmount.toIntOrNull() == null) return null
+
+        return ProductDraft(
+            ID = product.ID,
+            name = name,
+            amount = amount,
+            bestBefore = bestBefore,
+            reminderDate = remindMeAmount.toInt().let {
+                bestBefore.calculateReminder(it, remindMeType)
+            }
+        )
+    }
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        modifier = modifier
+            .padding(vertical = 4.dp)
+            .fillMaxWidth()
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessLow
                 )
-                .clickable { isExpanded = !isExpanded }
+            )
+            .clickable {
+                isExpanded = !isExpanded
+                isActivated = true
+                createDraft()?.let { onAddOrUpdate(it) }
+            }
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
+            //region TITLE + ICON
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                //region TITLE + ICON
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = product.name,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    AnimatedContent(
-                        targetState = isExpanded,
-                        transitionSpec = { (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut()) },
-                        label = "IconAnimation"
-                    ) { expanded ->
-                        Card(
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                            )
-                        ) {
-                            val resource = if (expanded) vectorResource(Res.drawable.check_icon)
-                            else vectorResource(Res.drawable.add_icon)
-                            Icon(
-                                imageVector = resource,
-                                contentDescription = stringResource(Res.string.add_product),
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        }
+                Text(
+                    text = stringResource(product.nameID),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                AnimatedContent(
+                    targetState = isExpanded,
+                    transitionSpec = { (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut()) },
+                    label = "IconAnimation"
+                ) { expanded ->
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        val resource = if (isActivated) vectorResource(Res.drawable.check_icon)
+                        else vectorResource(Res.drawable.add_icon)
+                        Icon(
+                            imageVector = resource,
+                            contentDescription = stringResource(Res.string.add_product),
+                            tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
                     }
                 }
-                //endregion
+            }
+            //endregion
 
-                AnimatedVisibility(
-                    visible = isExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
                 ) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                    Spacer(Modifier.height(12.dp))
+
+                    //region BEST BEFORE + AMOUNT
                     Column(
-                        modifier = Modifier
-                            .padding(top = 16.dp)
+                        modifier = modifier
+                            .fillMaxWidth()
                     ) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(Res.string.best_before),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
 
-                        //region BEST BEFORE + AMOUNT
-                        Column(
-                            modifier = modifier
-                                .fillMaxWidth()
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.best_before),
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                Box(
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    DialogOutlinedTextField(
-                                        value = bestBefore.toLocaleDisplayDate(Locale.current),
-                                        onValueChange = { /* READ ONLY */ },
-                                        readOnly = true,
-                                        placeholder = "",
-                                        trailingIcon = {
-                                            Icon(
-                                                vectorResource(Res.drawable.calendar_icon),
-                                                null,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        singleLine = true
-                                    )
-
-                                    //onClick doesnt work for textfield, so this is fix
-                                    Box(
-                                        modifier = Modifier
-                                            .matchParentSize()
-                                            .clickable { showDatePicker = true }
-                                    )
-                                }
-                                Spacer(Modifier.width(4.dp))
-                                //AMOUNT
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .padding(horizontal = 4.dp)
-                                ) {
-                                    Card(
-                                        shape = RoundedCornerShape(24.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                        ),
-                                        modifier = Modifier
-                                            .clickable {
-                                                if (amount > 1) amount--
-                                                else isExpanded = false
-                                            }
-                                    ) {
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.minus_icon),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                        )
-                                    }
-                                    Text(
-                                        text = amount.toString() + " " + stringResource(Res.string.items),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 4.dp)
-                                    )
-                                    Card(
-                                        shape = RoundedCornerShape(24.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                        ),
-                                        modifier = Modifier
-                                            .clickable { amount++ }
-                                    ) {
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.add_icon),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        //endregion
-                        Spacer(Modifier.height(24.dp))
-                        //region REMINDER
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
-                            Text(
-                                text = stringResource(Res.string.remind_me),
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-
-                            DialogOutlinedTextField(
-                                value = remindMeAmount,
-                                onValueChange = { remindMeAmount = it },
-                                placeholder = "",
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier
-                                    .weight(0.4f)
-                            )
-                            Spacer(Modifier.width(6.dp))
                             Box(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 DialogOutlinedTextField(
-                                    value = remindMeType.ToString(),
+                                    value = bestBefore.toLocaleDisplayDate(Locale.current),
                                     onValueChange = { /* READ ONLY */ },
                                     readOnly = true,
                                     placeholder = "",
                                     trailingIcon = {
-                                        Icon(vectorResource(
-                                            if (showRemindMePicker) Res.drawable.dropdown_open_icon
-                                            else Res.drawable.dropdown_closed_icon
-                                        ),
-                                            null
+                                        Icon(
+                                            vectorResource(Res.drawable.calendar_icon),
+                                            null,
+                                            modifier = Modifier.size(16.dp)
                                         )
-                                    }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
                                 )
 
-                                DropdownMenu(
-                                    expanded = showRemindMePicker,
-                                    onDismissRequest = { showRemindMePicker = false }
-                                ) {
-                                    RemindMeType.entries.forEach { type ->
-                                        DropdownMenuItem(
-                                            text = { Text(type.ToString()) },
-                                            onClick = {
-                                                remindMeType = type
-                                                showRemindMePicker = false
-                                            }
-                                        )
-                                    }
-                                }
-
+                                //onClick doesnt work for textfield, so this is fix
                                 Box(
                                     modifier = Modifier
                                         .matchParentSize()
-                                        .clickable { showRemindMePicker = !showRemindMePicker }
+                                        .clickable { showDatePicker = true }
                                 )
                             }
+                            Spacer(Modifier.width(4.dp))
+                            //AMOUNT
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                            ) {
+                                Card(
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                    ),
+                                    modifier = Modifier
+                                        .clickable {
+                                            if (amount > 1) {
+                                                amount--
+                                                createDraft()?.let { onAddOrUpdate(it) }
+                                            } else {
+                                                isExpanded = false
+                                                isActivated = false
+                                                onRemove(product.ID)
+                                            }
+                                        }
+                                ) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.minus_icon),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                                Text(
+                                    text = amount.toString() + " " + stringResource(Res.string.items),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                                Card(
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                    ),
+                                    modifier = Modifier
+                                        .clickable {
+                                            amount++
+                                            createDraft()?.let { onAddOrUpdate(it) }
+                                        }
+                                ) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.add_icon),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
                         }
-                        //endregion
                     }
-                }
-            }
-        }
-        //region DIALOGS
-        if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showDatePicker = false }
+                    //endregion
+                    Spacer(Modifier.height(24.dp))
+                    //region REMINDER
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
                     ) {
-                        Text(stringResource(Res.string.ok))
+                        Text(
+                            text = stringResource(Res.string.remind_me),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+
+                        DialogOutlinedTextField(
+                            value = remindMeAmount,
+                            onValueChange = {
+                                remindMeAmount = it
+                                createDraft()?.let { onAddOrUpdate(it) }
+                            },
+                            placeholder = "",
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .weight(0.4f)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            DialogOutlinedTextField(
+                                value = remindMeType.ToString(),
+                                onValueChange = { /* READ ONLY */ },
+                                readOnly = true,
+                                placeholder = "",
+                                trailingIcon = {
+                                    Icon(vectorResource(
+                                        if (showRemindMePicker) Res.drawable.dropdown_open_icon
+                                        else Res.drawable.dropdown_closed_icon
+                                    ),
+                                        null
+                                    )
+                                }
+                            )
+
+                            DropdownMenu(
+                                expanded = showRemindMePicker,
+                                onDismissRequest = { showRemindMePicker = false }
+                            ) {
+                                RemindMeType.entries.forEach { type ->
+                                    DropdownMenuItem(
+                                        text = { Text(type.ToString()) },
+                                        onClick = {
+                                            remindMeType = type
+                                            showRemindMePicker = false
+                                            createDraft()?.let { onAddOrUpdate(it) }
+                                        }
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { showRemindMePicker = !showRemindMePicker }
+                            )
+                        }
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text(stringResource(Res.string.cancel))
-                    }
+                    //endregion
                 }
-            ) {
-                DatePicker(state = datePickerState)
             }
         }
-        //endregion
     }
+    //region DIALOGS
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        createDraft()?.let { onAddOrUpdate(it) }
+                    }
+                ) {
+                    Text(stringResource(Res.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+    //endregion
+}
 
 /// Drag state holder
 data class DragState(

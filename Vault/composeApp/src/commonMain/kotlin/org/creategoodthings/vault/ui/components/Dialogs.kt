@@ -52,20 +52,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.todayIn
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
-import org.creategoodthings.vault.ui.components.RemindMeType.DAYS
-import org.creategoodthings.vault.ui.components.RemindMeType.MONTHS
-import org.creategoodthings.vault.ui.components.RemindMeType.WEEKS
-import org.creategoodthings.vault.ui.components.RemindMeType.YEARS
+import org.creategoodthings.vault.ui.RemindMeType
+import org.creategoodthings.vault.ui.ToString
+import org.creategoodthings.vault.ui.calculateReminder
+import org.creategoodthings.vault.ui.isAfterToday
 import org.creategoodthings.vault.ui.theme.PremiumGold
+import org.creategoodthings.vault.ui.toLocalDate
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
@@ -79,13 +75,11 @@ import vault.composeapp.generated.resources.best_before_error
 import vault.composeapp.generated.resources.calendar_icon
 import vault.composeapp.generated.resources.cancel
 import vault.composeapp.generated.resources.container
-import vault.composeapp.generated.resources.days
 import vault.composeapp.generated.resources.description
 import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.ex
 import vault.composeapp.generated.resources.give_storage_name
-import vault.composeapp.generated.resources.months
 import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.optional
 import vault.composeapp.generated.resources.premium_icon
@@ -95,14 +89,9 @@ import vault.composeapp.generated.resources.storage
 import vault.composeapp.generated.resources.storage_name
 import vault.composeapp.generated.resources.storage_name_example
 import vault.composeapp.generated.resources.vault
-import vault.composeapp.generated.resources.weeks
 import vault.composeapp.generated.resources.welcome
 import vault.composeapp.generated.resources.welcome_dialog_first_page_body
 import vault.composeapp.generated.resources.welcome_dialog_premium_body
-import vault.composeapp.generated.resources.years
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +108,7 @@ fun AddProductDialog(
     var showAddContainer by remember { mutableStateOf(false) }
 
     var showRemindMePicker by remember { mutableStateOf(false) }
-    var remindMeType by remember { mutableStateOf(WEEKS) }
+    var remindMeType by remember { mutableStateOf(RemindMeType.WEEKS) }
     var remindMeAmount by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -822,10 +811,10 @@ fun WelcomeDialog(
                     ) {
                         Text(
                             text = stringResource(Res.string.ok),
-                            color = if (isValid && storageName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
+                            color = if (isValid) MaterialTheme.colorScheme.tertiary else Color.Gray,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .clickable { onConfirm(Storage(name = storageName)) }
+                                .clickable { if (isValid) onConfirm(Storage(name = storageName)) }
                         )
                     }
                 }
@@ -878,45 +867,5 @@ fun PagerIndicator(
                     )
             )
         }
-    }
-}
-
-@OptIn(ExperimentalTime::class)
-fun Long.toLocalDate(): LocalDate {
-    val instant = Instant.fromEpochMilliseconds(this)
-    val timeZone = TimeZone.currentSystemDefault()
-    return instant.toLocalDateTime(timeZone).date
-}
-
-@OptIn(ExperimentalTime::class)
-fun LocalDate.isAfterToday(): Boolean {
-    val timeZone = TimeZone.currentSystemDefault()
-    val today = Clock.System.todayIn(timeZone)
-    return this > today
-}
-
-fun LocalDate.calculateReminder(amount: Int, type: RemindMeType): LocalDate {
-    return when (type) {
-        DAYS -> this.plus(amount, DateTimeUnit.DAY)
-        WEEKS -> this.plus(amount * 7, DateTimeUnit.DAY)
-        MONTHS -> this.plus(amount, DateTimeUnit.MONTH)
-        YEARS -> this.plus(amount, DateTimeUnit.YEAR)
-    }
-}
-
-enum class RemindMeType {
-    DAYS,
-    WEEKS,
-    MONTHS,
-    YEARS;
-}
-
-@Composable
-fun RemindMeType.ToString(): String {
-    return when (this) {
-        DAYS -> stringResource(Res.string.days)
-        WEEKS -> stringResource(Res.string.weeks)
-        MONTHS -> stringResource(Res.string.months)
-        YEARS -> stringResource(Res.string.years)
     }
 }

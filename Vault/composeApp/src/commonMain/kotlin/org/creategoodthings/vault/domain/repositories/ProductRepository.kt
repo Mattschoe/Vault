@@ -9,6 +9,7 @@ import org.creategoodthings.vault.domain.Storage
 
 interface ProductRepository {
     suspend fun insertProduct(product: Product)
+    suspend fun insertProducts(products: List<Product>)
     suspend fun insertStorage(storage: Storage)
     suspend fun insertContainer(container: Container)
 

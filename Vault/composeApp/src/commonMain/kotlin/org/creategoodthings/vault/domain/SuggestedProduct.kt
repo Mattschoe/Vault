@@ -1,8 +1,12 @@
 package org.creategoodthings.vault.domain
 
 import kotlinx.datetime.LocalDate
-import org.creategoodthings.vault.ui.components.RemindMeType
+import org.creategoodthings.vault.ui.RemindMeType
+import org.jetbrains.compose.resources.StringResource
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 /**
  * A SuggestedProduct is a product that is suggested to the user.
  * It contains values that doesn't hold any truth and are arbitrary,
@@ -12,8 +16,9 @@ import org.creategoodthings.vault.ui.components.RemindMeType
  * @param suggestedReminderAmount how many units of [suggestedReminderType]
  */
 data class SuggestedProduct(
-    val name: String,
+    val nameID: StringResource,
     val suggestedBestBefore: LocalDate,
     val suggestedReminderType: RemindMeType,
-    val suggestedReminderAmount: Int
+    val suggestedReminderAmount: Int,
+    val ID: String = Uuid.random().toString()
 )

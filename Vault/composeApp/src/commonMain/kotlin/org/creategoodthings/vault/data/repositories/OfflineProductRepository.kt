@@ -30,6 +30,23 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         ))
     }
 
+    override suspend fun insertProducts(products: List<Product>) {
+        dao.insertProducts(products.map { product ->
+            ProductEntity(
+                ID = product.ID,
+                storageID = product.storageID,
+                containerID = product.containerID,
+                name = product.name,
+                description = product.description,
+                bestBeforeDate = product.bestBefore,
+                reminderDate = product.reminderDate,
+                amount = product.amount,
+                isDirty = true,
+                isDeleted = false
+            )
+        })
+    }
+
     override suspend fun insertStorage(storage: Storage) {
         dao.insertStorage(StorageEntity(
             ID = storage.ID,

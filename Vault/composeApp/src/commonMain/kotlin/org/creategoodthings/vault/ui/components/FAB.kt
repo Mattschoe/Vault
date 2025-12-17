@@ -13,6 +13,8 @@ import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.add_icon
 import vault.composeapp.generated.resources.add_product
+import vault.composeapp.generated.resources.add_products
+import vault.composeapp.generated.resources.check_icon
 
 @Composable
 fun AddProductFAB(modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -25,6 +27,24 @@ fun AddProductFAB(modifier: Modifier = Modifier, onClick: () -> Unit) {
         Icon(
             vectorResource(Res.drawable.add_icon),
             contentDescription = stringResource(Res.string.add_product),
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier
+                .size(36.dp)
+        )
+    }
+}
+
+@Composable
+fun ConfirmFAB(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        modifier = modifier
+            .zIndex(1f)
+    ) {
+        Icon(
+            vectorResource(Res.drawable.check_icon),
+            contentDescription = stringResource(Res.string.add_products),
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier
                 .size(36.dp)
