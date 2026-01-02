@@ -13,16 +13,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val builder = getDatabaseBuilder(applicationContext)
-        val dbInstance = builder
-            .setDriver(BundledSQLiteDriver())
-            .build()
-        val dataStore = createDataStore(this)
-
-        val appContainer = AppContainer(
-            database = dbInstance,
-            dataStore = dataStore
-        )
+        val app = application as MyApplication
+        val appContainer = app.appContainer
 
         setContent {
             App(appContainer)

@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
             androidMain.dependencies {
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
+
             }
             commonMain.dependencies {
                 implementation(compose.runtime)
@@ -47,11 +48,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
 
-                // Room/DataStore
+                //Room/DataStore
                 implementation(libs.androidx.room.runtime)
                 implementation(libs.androidx.sqlite.bundled)
                 api(libs.datastore.preferences)
                 api(libs.datastore)
+
+                //Notifications
+                implementation(libs.androidx.work.runtime)
+                implementation(libs.androidx.work.runtime.ktx)
             }
             commonTest.dependencies {
                 implementation(libs.kotlin.test)

@@ -1,5 +1,6 @@
 package org.creategoodthings.vault.ui.pages.suggestionsPage
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -12,6 +13,8 @@ import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.SuggestedProduct
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
+import org.creategoodthings.vault.domain.services.NotificationScheduler
+import org.creategoodthings.vault.domain.services.PermissionController
 import org.creategoodthings.vault.ui.RemindMeType
 import org.creategoodthings.vault.ui.components.ProductDraft
 import vault.composeapp.generated.resources.Oil
@@ -54,7 +57,9 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class SuggestionsPageViewModel(
     private val _productRepo: ProductRepository,
-    private val _prefRepo: PreferencesRepository
+    private val _prefRepo: PreferencesRepository,
+    private val _notificationScheduler: NotificationScheduler,
+    private val _permissionController: PermissionController
 ): ViewModel() {
 
     private val _today = Clock.System.todayIn(TimeZone.currentSystemDefault())

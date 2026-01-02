@@ -31,7 +31,12 @@ fun ApplicationNavigationHost(
         //Main Screen
         composable<PageNavigation.Home> { backStackEntry ->
             val viewModel = viewModel<HomePageViewModel> {
-                HomePageViewModel(appContainer.productRepo, appContainer.preferencesRepository)
+                HomePageViewModel(
+                    appContainer.productRepo,
+                    appContainer.preferencesRepository,
+                    appContainer.notificationScheduler,
+                    appContainer.permissionController
+                )
             }
             HomePage(
                 navController = navController,
@@ -46,8 +51,10 @@ fun ApplicationNavigationHost(
                 StoragePageViewModel(
                     args.storageID,
                         appContainer.productRepo,
-                    appContainer.preferencesRepository
-                    )
+                    appContainer.preferencesRepository,
+                    appContainer.notificationScheduler,
+                    appContainer.permissionController
+                )
             }
             StoragePage(
                 navController = navController,
@@ -62,7 +69,9 @@ fun ApplicationNavigationHost(
             val viewModel = viewModel<SuggestionsPageViewModel> {
                 SuggestionsPageViewModel(
                     appContainer.productRepo,
-                    appContainer.preferencesRepository
+                    appContainer.preferencesRepository,
+                    appContainer.notificationScheduler,
+                    appContainer.permissionController
                 )
             }
             SuggestionsPage(

@@ -64,5 +64,8 @@ interface ProductDao {
 
     @Query("SELECT * FROM products WHERE isDeleted = false ORDER BY bestBeforeDate")
     fun getProductsOrderedByBB(): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products")
+    fun getAllProducts(): Flow<List<ProductEntity>>
     //endregion
 }

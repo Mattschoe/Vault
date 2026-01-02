@@ -21,8 +21,10 @@ import org.creategoodthings.vault.domain.SuggestedProduct
 import org.creategoodthings.vault.ui.components.AddProductFAB
 import org.creategoodthings.vault.ui.components.ConfirmFAB
 import org.creategoodthings.vault.ui.components.ProductDraft
+import org.creategoodthings.vault.ui.components.RequestPermissionDialog
 import org.creategoodthings.vault.ui.components.SuggestedProductCard
 import org.creategoodthings.vault.ui.components.WelcomeDialog
+import org.creategoodthings.vault.ui.components.rememberNotificationPermissionLauncher
 import org.creategoodthings.vault.ui.navigation.PageNavigation
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.jetbrains.compose.resources.StringResource
@@ -38,6 +40,9 @@ fun SuggestionsPage(
     val suggestions = viewModel.suggestions
     var storage by remember { mutableStateOf<Storage?>(null) }
     val drafts = remember { mutableMapOf<String, ProductDraft>() }
+    var showNotificationDialog by remember { mutableStateOf(false) }
+
+    val askPermission = rememberNotificationPermissionLauncher{ }
 
     PageShell(
         floatingActionButton = {
@@ -89,9 +94,23 @@ fun SuggestionsPage(
 
     if (storage == null) {
         WelcomeDialog(
-            onConfirm = { storage = it }
+            onConfirm = {
+                storage = it
+                showNotificationDialog = true
+            }
         )
     }
+
+    if (showNotificationDialog) {
+        RequestPermissionDialog(
+            onConfirm = {
+                showNotificationDialog = false
+                askPermission()
+            }
+        )
+    }
+
+
 }
 
 data class SuggestionSection(

@@ -3,6 +3,7 @@ package org.creategoodthings.vault.ui.pages
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,12 +16,10 @@ fun PageShell(
     floatingActionButton: (@Composable () -> Unit)? = null,
     pageContent: @Composable (PaddingValues) -> Unit,
 ) {
-    Box(
-        modifier = modifier
-    ) {
+    Box {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            floatingActionButton = { if (floatingActionButton != null) floatingActionButton() }
+            floatingActionButton = { if (floatingActionButton != null) floatingActionButton() },
         ) { innerPadding ->
             val padding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,

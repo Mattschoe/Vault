@@ -25,6 +25,7 @@ interface ProductRepository {
     fun getStorageProductsWithoutContainerOrderedByBB(storageID: String): Flow<List<Product>>
     fun getProductsOrderedByBB(): Flow<List<Product>>
     fun getStorageName(storageID: String): Flow<String>
+    fun getAllProducts(): Flow<List<Product>>
 }
 
 data class StorageWithProducts(

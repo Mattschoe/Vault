@@ -17,6 +17,8 @@ import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
+import org.creategoodthings.vault.domain.services.NotificationScheduler
+import org.creategoodthings.vault.domain.services.PermissionController
 import org.creategoodthings.vault.ui.pages.home.StorageUIState
 import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 
@@ -24,7 +26,9 @@ import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 class StoragePageViewModel(
     private val _storageID: String,
     private val _productRepo: ProductRepository,
-    private val _prefRepo: PreferencesRepository
+    private val _prefRepo: PreferencesRepository,
+    private val _notificationScheduler: NotificationScheduler,
+    private val _permissionController: PermissionController,
 ): ViewModel() {
     val storages = _productRepo.getStoragesWithContainersShell().stateIn(
         scope = viewModelScope,

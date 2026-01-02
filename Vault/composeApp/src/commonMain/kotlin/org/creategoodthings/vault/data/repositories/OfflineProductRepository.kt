@@ -164,5 +164,11 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     override fun getStorageName(storageID: String): Flow<String> {
         return dao.getStorageName(storageID)
     }
+
+    override fun getAllProducts(): Flow<List<Product>> {
+        return dao.getAllProducts().map { products ->
+            products.map { it.toDomain() }
+        }
+    }
 }
 

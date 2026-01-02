@@ -17,11 +17,15 @@ import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.repositories.StorageWithProducts
+import org.creategoodthings.vault.domain.services.NotificationScheduler
+import org.creategoodthings.vault.domain.services.PermissionController
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomePageViewModel(
     private val _productRepo: ProductRepository,
-    private val _preferencesRepo: PreferencesRepository
+    private val _preferencesRepo: PreferencesRepository,
+    private val _notificationScheduler: NotificationScheduler,
+    private val _permissionController: PermissionController
 ): ViewModel() {
     private val _products = _productRepo.getProductsOrderedByBB()
     private val _storages = _productRepo.getStoragesWithContainersShell()

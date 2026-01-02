@@ -80,6 +80,8 @@ import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.ex
 import vault.composeapp.generated.resources.give_storage_name
+import vault.composeapp.generated.resources.notification_dialog_body
+import vault.composeapp.generated.resources.notification_dialog_title
 import vault.composeapp.generated.resources.ok
 import vault.composeapp.generated.resources.optional
 import vault.composeapp.generated.resources.premium_icon
@@ -92,6 +94,85 @@ import vault.composeapp.generated.resources.vault
 import vault.composeapp.generated.resources.welcome
 import vault.composeapp.generated.resources.welcome_dialog_first_page_body
 import vault.composeapp.generated.resources.welcome_dialog_premium_body
+
+@Composable
+fun RequestPermissionDialog(
+    onConfirm: () -> Unit
+) {
+    Dialog(onDismissRequest = onConfirm) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            shadowElevation = 6.dp,
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.notification_dialog_title),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.notification_dialog_body),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(Modifier.height(32.dp))
+                //region PREMIUM
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .border(
+                            width = 1.5.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.welcome_dialog_premium_body),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(bottom = 12.dp)
+                    )
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.premium_icon),
+                        contentDescription = null,
+                        tint = PremiumGold,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.BottomEnd)
+                    )
+                }
+                //endregion
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.ok),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onConfirm() }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
