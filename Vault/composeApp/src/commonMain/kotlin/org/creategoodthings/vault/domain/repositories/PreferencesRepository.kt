@@ -11,10 +11,17 @@ interface PreferencesRepository {
     //region SETTINGS
     val reminderTime: Flow<LocalTime>
     val amPm: Flow<Boolean>
+    val containerSortOrder: Flow<ContainerSortOrder>
     //endregion
 
     suspend fun setStandardStorageID(storageID: String)
     suspend fun setSortOption(sortOption: SortOption)
     suspend fun setReminderTime(reminderTime: LocalTime)
     suspend fun setAmPm(amPm: Boolean)
+    suspend fun setContainerSortOrder(sortOrder: ContainerSortOrder)
+}
+
+enum class ContainerSortOrder {
+    ALPHABETICALLY,
+    BEST_BEFORE
 }

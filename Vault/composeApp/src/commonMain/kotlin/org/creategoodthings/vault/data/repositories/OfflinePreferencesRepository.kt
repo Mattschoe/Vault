@@ -8,8 +8,11 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalTime
+import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.ui.pages.storage.SortOption
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.*
 
 class OfflinePreferencesRepository(
     private val dataStore: DataStore<Preferences>
@@ -19,6 +22,7 @@ class OfflinePreferencesRepository(
         val SORT_OPTION = stringPreferencesKey("sort_option")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
         val amPm = booleanPreferencesKey("amPm")
+        val containerSortOrder = stringPreferencesKey("container_sort_order")
     }
 
     override val standardStorageID = dataStore.data.map { preferences ->
@@ -36,6 +40,12 @@ class OfflinePreferencesRepository(
         else LocalTime.parse(time)
     }
     override val amPm = dataStore.data.map { it[Keys.amPm] == true }
+
+    override val containerSortOrder = dataStore.data.map {
+        val sortOrder = it[Keys.containerSortOrder]
+        if (sortOrder != null) ContainerSortOrder.valueOf(sortOrder)
+        else BEST_BEFORE
+    }
 
     override suspend fun setStandardStorageID(storageID: String) {
         dataStore.edit { preferences ->
@@ -55,5 +65,9 @@ class OfflinePreferencesRepository(
 
     override suspend fun setAmPm(amPm: Boolean) {
         dataStore.edit { it[Keys.amPm] = amPm }
+    }
+
+    override suspend fun setContainerSortOrder(sortOrder: ContainerSortOrder) {
+        dataStore.edit { it[Keys.containerSortOrder] = sortOrder.toString() }
     }
 }

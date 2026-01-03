@@ -1,10 +1,8 @@
 package org.creategoodthings.vault.data.local
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -56,11 +54,23 @@ interface ProductDao {
         SELECT * FROM container 
         LEFT JOIN products ON container.ID = products.containerID AND products.isDeleted = false
         WHERE container.storageID = :storageID AND container.isDeleted = false
+        ORDER BY container.name, products.bestBeforeDate
     """)
-    fun getStorageContainersWithProducts(storageID: String): Flow<Map<ContainerEntity, List<ProductEntity>>>
+    fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<Map<ContainerEntity, List<ProductEntity>>>
+
+    @Query("""
+        SELECT * FROM container 
+        LEFT JOIN products ON container.ID = products.containerID AND products.isDeleted = false
+        WHERE container.storageID = :storageID AND container.isDeleted = false
+        ORDER BY container.name, products.name ASC
+    """)
+    fun getStorageContainersWithProductsOrderedByName(storageID: String): Flow<Map<ContainerEntity, List<ProductEntity>>>
 
     @Query("SELECT * FROM products WHERE containerID IS NULL AND storageID = :storageID AND isDeleted = false ORDER BY bestBeforeDate")
     fun getStorageProductsWithoutContainerOrderedByBB(storageID: String): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE containerID IS NULL AND storageID = :storageID AND isDeleted = false ORDER BY name ASC")
+    fun getStorageProductsWithoutContainerOrderedByName(storageID: String): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE isDeleted = false ORDER BY bestBeforeDate")
     fun getProductsOrderedByBB(): Flow<List<ProductEntity>>

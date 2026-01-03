@@ -9,10 +9,12 @@ import org.creategoodthings.vault.data.local.StorageEntity
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.repositories.StorageWithProducts
 import org.creategoodthings.vault.domain.repositories.toDomain
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.*
 
 class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     override suspend fun insertProduct(product: Product) {
@@ -87,6 +89,9 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
             name = storage.name,
             isDirty = true,
             isDeleted = false
+
+
+
         ))
     }
 
@@ -133,8 +138,12 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         }
     }
 
-    override fun getStorageContainersWithProductsOrderedByBB(storageID: String): Flow<List<ContainerWithProducts>> {
-        return dao.getStorageContainersWithProducts(storageID).map { map ->
+    override fun getStorageContainersWithProducts(storageID: String, sortOrder: ContainerSortOrder): Flow<List<ContainerWithProducts>> {
+        val containers = when(sortOrder) {
+            ALPHABETICALLY -> dao.getStorageContainersWithProductsOrderedByName(storageID)
+            BEST_BEFORE -> dao.getStorageContainersWithProductsOrderedByBB(storageID)
+        }
+        return containers.map { map ->
             map.map { (containerEntity, productEntities) ->
                 ContainerWithProducts(
                     container = Container(
@@ -148,8 +157,12 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         }
     }
 
-    override fun getStorageProductsWithoutContainerOrderedByBB(storageID: String): Flow<List<Product>> {
-        return dao.getStorageProductsWithoutContainerOrderedByBB(storageID).map { products ->
+    override fun getStorageProductsWithoutContainer(storageID: String, sortOrder: ContainerSortOrder): Flow<List<Product>> {
+        val containers = when(sortOrder) {
+            ALPHABETICALLY -> dao.getStorageProductsWithoutContainerOrderedByName(storageID)
+            BEST_BEFORE -> dao.getStorageProductsWithoutContainerOrderedByBB(storageID)
+        }
+        return containers.map { products ->
             products.map { it.toDomain() }
         }
     }

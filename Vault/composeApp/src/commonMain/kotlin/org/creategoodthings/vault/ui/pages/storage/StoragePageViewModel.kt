@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -37,7 +36,7 @@ class StoragePageViewModel(
     )
 
     private val _selectedStorageID = _prefRepo.standardStorageID
-    val selectedStorage: StateFlow<StorageUIState> = _selectedStorageID.flatMapLatest { ID ->
+    val selectedStorage = _selectedStorageID.flatMapLatest { ID ->
         if (ID == null) {
             flowOf(StorageUIState.NoneSelected)
         } else {
@@ -76,11 +75,13 @@ class StoragePageViewModel(
     val products = _sortOption.flatMapLatest { option ->
         when (option) {
             CONTAINER -> {
-                combine(
-                    _productRepo.getStorageContainersWithProductsOrderedByBB(_storageID),
-                    _productRepo.getStorageProductsWithoutContainerOrderedByBB(_storageID)
-                ) { groups, unOrganizedProducts ->
-                    ProductListData.Grouped(groups, unOrganizedProducts)
+                _prefRepo.containerSortOrder.flatMapLatest { sortOrder ->
+                    combine(
+                        _productRepo.getStorageContainersWithProducts(_storageID, sortOrder),
+                        _productRepo.getStorageProductsWithoutContainer(_storageID, sortOrder)
+                    ) { groups, unOrganizedProducts ->
+                        ProductListData.Grouped(groups, unOrganizedProducts)
+                    }
                 }
             }
 

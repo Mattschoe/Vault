@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 
 class SettingsViewModel(
@@ -24,6 +25,12 @@ class SettingsViewModel(
         initialValue = false
     )
 
+    val containerSortOrder = _prefRepo.containerSortOrder.stateIn(
+        started = SharingStarted.WhileSubscribed(5_000),
+        scope = viewModelScope,
+        initialValue = ContainerSortOrder.BEST_BEFORE
+    )
+
     fun setReminderTime(newTime: LocalTime) {
         viewModelScope.launch {
             _prefRepo.setReminderTime(newTime)
@@ -33,6 +40,12 @@ class SettingsViewModel(
     fun setAmPm(amPm: Boolean) {
         viewModelScope.launch {
             _prefRepo.setAmPm(amPm)
+        }
+    }
+
+    fun changeContainerSortOrder(newSortOrder: ContainerSortOrder) {
+        viewModelScope.launch {
+            _prefRepo.setContainerSortOrder(newSortOrder)
         }
     }
 }
