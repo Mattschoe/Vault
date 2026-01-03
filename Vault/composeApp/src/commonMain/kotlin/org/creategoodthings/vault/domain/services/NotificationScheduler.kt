@@ -1,11 +1,12 @@
 package org.creategoodthings.vault.domain.services
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 
 interface NotificationScheduler {
-    fun scheduleReminder(notification: NotificationData)
+    suspend fun scheduleReminder(notification: NotificationData)
     fun cancelReminder(ID: String)
-    fun refreshNotifications(allNotifications: List<NotificationData>)
+    suspend fun refreshNotifications(allNotifications: List<NotificationData>)
 }
 
 data class NotificationData(

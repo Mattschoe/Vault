@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month.APRIL
 import kotlinx.datetime.Month.AUGUST
 import kotlinx.datetime.Month.DECEMBER
@@ -17,6 +18,7 @@ import kotlinx.datetime.Month.NOVEMBER
 import kotlinx.datetime.Month.OCTOBER
 import kotlinx.datetime.Month.SEPTEMBER
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format.AmPmMarker
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
@@ -42,6 +44,8 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import org.creategoodthings.vault.ui.RemindMeType.*
+import kotlin.math.min
+
 
 @Composable
 fun LocalDate.toDisplayText(): String {
@@ -75,6 +79,55 @@ fun LocalDate.isAfterToday(): Boolean {
     val timeZone = TimeZone.currentSystemDefault()
     val today = Clock.System.todayIn(timeZone)
     return this > today
+}
+
+/**
+ * Formats a given localtime to look like a real time of day, so:
+ *
+ * LocalTime(8, 0) -> "08:00"
+ *
+ * LocalTime(15, 1) -> "15:01"
+ *
+ * LocalTime(11, 30) -> "11:30"
+ *
+ * @param amPm enables whether AM/PM text is appended to the string
+ */
+fun LocalTime.toDisplayString(amPm: Boolean = false): String {
+    //TODO ADD AM/PM CONVERSION (Check first if it needs that)
+    val stringBuilder = StringBuilder()
+
+    if (amPm) {
+        when (val hour = this.toAmPmHour()) {
+            in 0..9 -> stringBuilder.append("0").append(hour)
+            in 10..12 -> stringBuilder.append(hour)
+        }
+    } else {
+        when(hour) {
+            in 0..9 -> stringBuilder.append("0").append(hour)
+            in 10..23 -> stringBuilder.append(hour)
+        }
+    }
+    stringBuilder.append(":")
+    when(minute) {
+        in 0..9 -> stringBuilder.append("0").append(minute)
+        in 10..59 -> stringBuilder.append(minute)
+    }
+
+    if (amPm) {
+        stringBuilder.append(" ")
+        stringBuilder.append(
+            when {
+                hour < 12 -> "AM"
+                else -> "PM"
+            }
+        )
+    }
+    return stringBuilder.toString()
+}
+
+fun LocalTime.toAmPmHour(): Int {
+    val hour = hour % 12
+    return if (hour == 0) 12 else hour
 }
 
 enum class RemindMeType {

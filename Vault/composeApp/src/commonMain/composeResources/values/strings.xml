@@ -97,4 +97,11 @@
     <string name="suggestions_bottom_text">Don't worry you can always change the naming or add more products later</string>
     <string name="notification_dialog_title">We would like to inform you when your products expire</string>
     <string name="notification_dialog_body">To be able to inform you when your products expire we would like to send you notifications.</string>
+
+    <!-- SETTINGS PAGE -->
+    <string name="reminder_header">Reminder</string>
+    <string name="reminder_time_body">Time of day for reminder</string>
+    <string name="account_header">Account</string>
+    <string name="delete_me">Delete Me!</string>
+    <string name="am_pm_enabled">Use AM/PM time</string>
 </resources>

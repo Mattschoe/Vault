@@ -10,8 +10,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import org.creategoodthings.vault.AppContainer
+import org.creategoodthings.vault.ui.pages.settings.SettingsPage
 import org.creategoodthings.vault.ui.pages.home.HomePage
 import org.creategoodthings.vault.ui.pages.home.HomePageViewModel
+import org.creategoodthings.vault.ui.pages.settings.SettingsViewModel
 import org.creategoodthings.vault.ui.pages.storage.StoragePage
 import org.creategoodthings.vault.ui.pages.storage.StoragePageViewModel
 import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPage
@@ -63,6 +65,18 @@ fun ApplicationNavigationHost(
         }
 
         //Settings
+        composable<PageNavigation.Settings> {
+            val viewModel = viewModel<SettingsViewModel> {
+                SettingsViewModel(
+                    appContainer.preferencesRepository
+                )
+            }
+
+            SettingsPage(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
 
         //Suggestions
         composable<PageNavigation.Suggestions> {

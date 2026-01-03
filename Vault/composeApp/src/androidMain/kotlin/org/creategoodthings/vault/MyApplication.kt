@@ -2,6 +2,8 @@ package org.creategoodthings.vault
 
 import android.app.Application
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository
+import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.services.AndroidNotificationScheduler
 import org.creategoodthings.vault.domain.services.AndroidPermissionController
 
@@ -17,11 +19,15 @@ class MyApplication : Application() {
             .build()
 
         val dataStore = createDataStore(this)
-        val scheduler = AndroidNotificationScheduler(this)
+        val prefRepo = OfflinePreferencesRepository(dataStore)
+        val scheduler = AndroidNotificationScheduler(
+            context = this,
+            prefRepo = prefRepo
+        )
         val permissionController = AndroidPermissionController(this)
         appContainer = AppContainer(
             database = dbInstance,
-            dataStore = dataStore,
+            preferencesRepository = prefRepo,
             notificationScheduler = scheduler,
             permissionController = permissionController
         )

@@ -8,11 +8,15 @@ import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Build
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.number
+import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 
 class AndroidNotificationScheduler(
-    private val context: Context
+    private val context: Context,
+    private val prefRepo: PreferencesRepository
 ) : NotificationScheduler {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -29,7 +33,15 @@ class AndroidNotificationScheduler(
         notificationManager.createNotificationChannel(channel)
     }
 
-    override fun scheduleReminder(notification: NotificationData) {
+    override suspend fun scheduleReminder(notification: NotificationData) {
+        val reminderTime = prefRepo.reminderTime.first()
+        scheduleReminder(notification, reminderTime)
+    }
+
+    /**
+     * [scheduleReminder] but with the reminderTime passed as argument to avoid excess database querying
+     */
+    private fun scheduleReminder(notification: NotificationData, reminderTime: LocalTime) {
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("TITLE", notification.title)
             putExtra("MESSAGE", notification.message)
@@ -48,8 +60,8 @@ class AndroidNotificationScheduler(
             set(Calendar.YEAR, notification.date.year)
             set(Calendar.MONTH, notification.date.month.number - 1)
             set(Calendar.DAY_OF_MONTH, notification.date.day)
-            set(Calendar.HOUR_OF_DAY, 8) //TODO: User should be able to change this themselves
-            set(Calendar.MINUTE, 0)
+            set(Calendar.HOUR_OF_DAY, reminderTime.hour) //TODO: User should be able to change this themselves
+            set(Calendar.MINUTE, reminderTime.minute)
             set(Calendar.SECOND, 0)
         }
 
@@ -72,9 +84,10 @@ class AndroidNotificationScheduler(
         alarmManager.cancel(pendingIntent)
     }
 
-    override fun refreshNotifications(allNotifications: List<NotificationData>) {
+    override suspend fun refreshNotifications(allNotifications: List<NotificationData>) {
+        val reminderTime = prefRepo.reminderTime.first()
         allNotifications.forEach {
-            scheduleReminder(NotificationData(it.ID, it.title, it.message, it.date))
+            scheduleReminder(it, reminderTime)
         }
     }
 }

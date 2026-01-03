@@ -12,14 +12,11 @@ import org.creategoodthings.vault.domain.services.PermissionController
 
 class AppContainer(
     private val database: AppDatabase,
-    private val dataStore: DataStore<Preferences>,
+    val preferencesRepository: PreferencesRepository,
     val notificationScheduler: NotificationScheduler,
     val permissionController: PermissionController,
 ) {
     val productRepo: ProductRepository by lazy {
         OfflineProductRepository(database.productDao())
-    }
-    val preferencesRepository: PreferencesRepository by lazy {
-        OfflinePreferencesRepository(dataStore)
     }
 }

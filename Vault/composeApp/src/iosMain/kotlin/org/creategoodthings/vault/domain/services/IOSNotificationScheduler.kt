@@ -1,9 +1,10 @@
 package org.creategoodthings.vault.domain.services
 
-import kotlinx.datetime.LocalDate
+import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.number
+import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import platform.Foundation.NSCalendar
-import platform.Foundation.NSCalendarIdentifier
 import platform.Foundation.NSCalendarIdentifierGregorian
 import platform.Foundation.NSDateComponents
 import platform.UserNotifications.UNCalendarNotificationTrigger
@@ -12,10 +13,20 @@ import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
 
-class IOSNotificationScheduler : NotificationScheduler {
+class IOSNotificationScheduler(
+    private val _prefRepo: PreferencesRepository
+) : NotificationScheduler {
     private val notificationCenter = UNUserNotificationCenter.currentNotificationCenter()
 
-    override fun scheduleReminder(notification: NotificationData) {
+    override suspend fun scheduleReminder(notification: NotificationData) {
+        val reminderTime = _prefRepo.reminderTime.first()
+        scheduleReminder(notification, reminderTime)
+    }
+
+    /**
+     * [scheduleReminder]but with the reminderTime passed as argument to avoid excess database querying
+     */
+    private fun scheduleReminder(notification: NotificationData, reminderTime: LocalTime) {
         val content = UNMutableNotificationContent().apply {
             setTitle(notification.title)
             setBody(notification.message)
@@ -27,8 +38,8 @@ class IOSNotificationScheduler : NotificationScheduler {
             setYear(notification.date.year)
             setMonth(notification.date.month.number)
             setDay(notification.date.day)
-            setHour(8)
-            setMinute(0)
+            setHour(reminderTime.hour)
+            setMinute(reminderTime.minute)
             setSecond(0)
         }
 
@@ -54,7 +65,8 @@ class IOSNotificationScheduler : NotificationScheduler {
         notificationCenter.removePendingNotificationRequestsWithIdentifiers(listOf(ID))
     }
 
-    override fun refreshNotifications(allNotifications: List<NotificationData>) {
-        allNotifications.forEach { scheduleReminder(it) }
+    override suspend fun refreshNotifications(allNotifications: List<NotificationData>) {
+        val reminderTime = _prefRepo.reminderTime.first()
+        allNotifications.forEach { scheduleReminder(it, reminderTime) }
     }
 }
