@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
     }
 
     kotlin {
+        applyDefaultHierarchyTemplate()
         androidTarget {
             compilerOptions {
                 jvmTarget.set(JvmTarget.JVM_11)
@@ -31,7 +32,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
             androidMain.dependencies {
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
-
+                implementation(libs.ktor.client.okhttp)
             }
             commonMain.dependencies {
                 implementation(compose.runtime)
@@ -57,6 +58,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 //Notifications
                 implementation(libs.androidx.work.runtime)
                 implementation(libs.androidx.work.runtime.ktx)
+
+                //Ktor
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+            }
+            val iosMain by getting {
+                dependencies {
+                    implementation(libs.ktor.client.darwin)
+                }
             }
             commonTest.dependencies {
                 implementation(libs.kotlin.test)
@@ -64,6 +75,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
             jvmMain.dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutinesSwing)
+                implementation(libs.ktor.client.okhttp)
             }
         }
     }
