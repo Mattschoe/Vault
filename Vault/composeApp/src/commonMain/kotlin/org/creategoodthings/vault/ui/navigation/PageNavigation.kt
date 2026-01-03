@@ -12,4 +12,6 @@ sealed class PageNavigation {
     object Settings : PageNavigation()
     @Serializable
     object Suggestions : PageNavigation()
+    @Serializable
+    object Register : PageNavigation()
 }

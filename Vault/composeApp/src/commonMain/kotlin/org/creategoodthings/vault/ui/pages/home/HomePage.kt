@@ -76,13 +76,13 @@ import org.creategoodthings.vault.ui.components.DragState
 import org.creategoodthings.vault.ui.components.DraggableProductCard
 import org.creategoodthings.vault.ui.components.DropZone
 import org.creategoodthings.vault.ui.components.ProductCard
-import org.creategoodthings.vault.ui.components.WelcomeDialog
 import org.creategoodthings.vault.ui.navigation.PageNavigation
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.Loading
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.NoneSelected
 import org.creategoodthings.vault.ui.pages.home.StorageUIState.Success
 import org.creategoodthings.vault.ui.theme.MustardWarning
+import org.creategoodthings.vault.ui.theme.PremiumGold
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
@@ -94,11 +94,13 @@ import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.expires_next
 import vault.composeapp.generated.resources.ok
+import vault.composeapp.generated.resources.premium_icon
 import vault.composeapp.generated.resources.products
 import vault.composeapp.generated.resources.settings
 import vault.composeapp.generated.resources.settings_icon
 import vault.composeapp.generated.resources.trashcan_icon
 import vault.composeapp.generated.resources.welcome
+import vault.composeapp.generated.resources.welcome_dialog_premium_body
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -213,12 +215,23 @@ fun HomePage(
                                             )
                                         }
 
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.settings_icon),
-                                            contentDescription = stringResource(Res.string.settings),
-                                            modifier = Modifier
-                                                .clickable { navController.navigate(PageNavigation.Settings) }
-                                        )
+
+                                        Row {
+                                            Icon(
+                                                imageVector = vectorResource(Res.drawable.premium_icon),
+                                                contentDescription = stringResource(Res.string.welcome_dialog_premium_body),
+                                                tint = PremiumGold,
+                                                modifier = Modifier
+                                                    .clickable { navController.navigate(PageNavigation.Register) }
+                                            )
+                                            Spacer(Modifier.width(16.dp))
+                                            Icon(
+                                                imageVector = vectorResource(Res.drawable.settings_icon),
+                                                contentDescription = stringResource(Res.string.settings),
+                                                modifier = Modifier
+                                                    .clickable { navController.navigate(PageNavigation.Settings) }
+                                            )
+                                        }
                                     }
                                 }
                                 //endregion

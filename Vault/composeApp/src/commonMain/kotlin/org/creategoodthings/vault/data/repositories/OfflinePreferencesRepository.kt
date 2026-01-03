@@ -5,10 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalTime
-import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.ui.pages.storage.SortOption
@@ -21,8 +19,9 @@ class OfflinePreferencesRepository(
         val STANDARD_STORAGE_ID = stringPreferencesKey("standard_storage_id")
         val SORT_OPTION = stringPreferencesKey("sort_option")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
-        val amPm = booleanPreferencesKey("amPm")
-        val containerSortOrder = stringPreferencesKey("container_sort_order")
+        val AM_PM = booleanPreferencesKey("amPm")
+        val CONTAINER_SORT_ORDER = stringPreferencesKey("container_sort_order")
+        val TOKEN = stringPreferencesKey("token")
     }
 
     override val standardStorageID = dataStore.data.map { preferences ->
@@ -39,10 +38,10 @@ class OfflinePreferencesRepository(
         if (time == null) LocalTime(8,0)
         else LocalTime.parse(time)
     }
-    override val amPm = dataStore.data.map { it[Keys.amPm] == true }
-
+    override val amPm = dataStore.data.map { it[Keys.AM_PM] == true }
+    override val token = dataStore.data.map { it[Keys.TOKEN] }
     override val containerSortOrder = dataStore.data.map {
-        val sortOrder = it[Keys.containerSortOrder]
+        val sortOrder = it[Keys.CONTAINER_SORT_ORDER]
         if (sortOrder != null) ContainerSortOrder.valueOf(sortOrder)
         else BEST_BEFORE
     }
@@ -64,10 +63,18 @@ class OfflinePreferencesRepository(
     }
 
     override suspend fun setAmPm(amPm: Boolean) {
-        dataStore.edit { it[Keys.amPm] = amPm }
+        dataStore.edit { it[Keys.AM_PM] = amPm }
     }
 
     override suspend fun setContainerSortOrder(sortOrder: ContainerSortOrder) {
-        dataStore.edit { it[Keys.containerSortOrder] = sortOrder.toString() }
+        dataStore.edit { it[Keys.CONTAINER_SORT_ORDER] = sortOrder.toString() }
+    }
+
+    override suspend fun setToken(token: String) {
+        dataStore.edit { it[Keys.TOKEN] = token }
+    }
+
+    override suspend fun clearToken() {
+        dataStore.edit { it.remove(Keys.TOKEN) }
     }
 }

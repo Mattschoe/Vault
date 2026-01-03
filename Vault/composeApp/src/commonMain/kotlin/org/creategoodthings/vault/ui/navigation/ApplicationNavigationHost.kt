@@ -18,6 +18,8 @@ import org.creategoodthings.vault.ui.pages.storage.StoragePage
 import org.creategoodthings.vault.ui.pages.storage.StoragePageViewModel
 import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPage
 import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPageViewModel
+import org.creategoodthings.vault.ui.pages.register.LoginViewModel
+import org.creategoodthings.vault.ui.pages.register.RegisterPage
 
 @Composable
 fun ApplicationNavigationHost(
@@ -89,6 +91,19 @@ fun ApplicationNavigationHost(
                 )
             }
             SuggestionsPage(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
+
+        //Register
+        composable<PageNavigation.Register> {
+            val viewModel = viewModel<LoginViewModel> {
+                LoginViewModel(
+                    _authRepo = appContainer.authRepository
+                )
+            }
+            RegisterPage(
                 navController = navController,
                 viewModel = viewModel
             )
