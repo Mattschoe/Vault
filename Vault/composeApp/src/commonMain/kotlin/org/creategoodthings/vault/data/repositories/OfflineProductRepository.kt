@@ -89,14 +89,22 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
             name = storage.name,
             isDirty = true,
             isDeleted = false
-
-
-
         ))
     }
 
     override suspend fun deleteProduct(product: Product) {
-        dao.deleteProduct(product.ID)
+        dao.updateProduct(ProductEntity(
+            ID = product.ID,
+            storageID = product.storageID,
+            containerID = product.containerID,
+            name = product.name,
+            description = product.description,
+            bestBeforeDate = product.bestBefore,
+            reminderDate = product.reminderDate,
+            amount = product.amount,
+            isDirty = true,
+            isDeleted = true
+        ))
     }
 
     override fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>> {
