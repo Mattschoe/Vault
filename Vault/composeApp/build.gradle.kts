@@ -33,6 +33,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.ktor.client.okhttp)
+
+                //Revenuecat + Google play billing
+                implementation(libs.purchases.core)
+                implementation(libs.purchases.result)
+                implementation(libs.billing)
+                implementation(libs.billing.ktx)
+
+                //Notifications
+                implementation(libs.androidx.work.runtime)
+                implementation(libs.androidx.work.runtime.ktx)
             }
             commonMain.dependencies {
                 implementation(compose.runtime)
@@ -55,10 +65,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 api(libs.datastore.preferences)
                 api(libs.datastore)
 
-                //Notifications
-                implementation(libs.androidx.work.runtime)
-                implementation(libs.androidx.work.runtime.ktx)
-
                 //Ktor
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
@@ -67,6 +73,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
             val iosMain by getting {
                 dependencies {
                     implementation(libs.ktor.client.darwin)
+
+                    //Revenuecat
+                    implementation(libs.purchases.core)
+                    implementation(libs.purchases.result)
                 }
             }
             commonTest.dependencies {
@@ -76,7 +86,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutinesSwing)
                 implementation(libs.ktor.client.okhttp)
+
+                //TODO Find en måde at bille i Desktop, evt. åbn hjemmesiden?
             }
+        }
+        sourceSets.all {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
 
@@ -88,8 +103,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
             applicationId = "org.creategoodthings.vault"
             minSdk = libs.versions.android.minSdk.get().toInt()
             targetSdk = libs.versions.android.targetSdk.get().toInt()
-            versionCode = 1
-            versionName = "1.0"
+            versionCode = 2
+            versionName = "1.0.0-alpha2"
         }
         packaging {
             resources {
