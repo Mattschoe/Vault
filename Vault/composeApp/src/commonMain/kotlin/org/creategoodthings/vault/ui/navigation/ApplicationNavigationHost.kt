@@ -100,6 +100,7 @@ fun ApplicationNavigationHost(
         composable<PageNavigation.Register> {
             val viewModel = viewModel<LoginViewModel> {
                 LoginViewModel(
+                    _productRepo = appContainer.productRepo,
                     _authRepo = appContainer.authRepository,
                     _purchaseManager = appContainer.purchaseManager
                 )

@@ -1,17 +1,27 @@
 package org.creategoodthings.vault.ui.pages.premium
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Result
+import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.repositories.AuthRepository
+import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.services.PurchaseManager
 import org.creategoodthings.vault.domain.services.SubscriptionOption
+import org.jetbrains.compose.resources.StringResource
+import vault.composeapp.generated.resources.Res
+import vault.composeapp.generated.resources.no_email_inputted
+import vault.composeapp.generated.resources.no_storage_chosen
 
 class LoginViewModel(
+    private val _productRepo: ProductRepository,
     private val _authRepo: AuthRepository,
     private val _purchaseManager: PurchaseManager
 ): ViewModel() {
@@ -21,6 +31,18 @@ class LoginViewModel(
     private val _purchaseOptions = MutableStateFlow<PurchaseOptionsState>(PurchaseOptionsState.Loading)
     val purchaseOptions = _purchaseOptions.asStateFlow()
 
+    private val _shareState = MutableStateFlow<ShareState>(ShareState.NotPerformed)
+    val shareState = _shareState.asStateFlow()
+
+    val isPremium = _purchaseManager.isPremium
+
+
+    val storages = _productRepo.getStoragesWithContainersShell().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyMap()
+    )
+
     init {
         viewModelScope.launch {
             _authRepo.currentUser.collect { user ->
@@ -29,6 +51,7 @@ class LoginViewModel(
             }
         }
         getPurchaseOptions()
+
     }
 
     fun onUsernameChange(newUserName: String) { _uiState.update { it.copy(username = newUserName, error = null) }}
@@ -71,7 +94,7 @@ class LoginViewModel(
         }
     }
 
-    private fun getPurchaseOptions() {
+    fun getPurchaseOptions() {
         viewModelScope.launch {
             _purchaseOptions.value = PurchaseOptionsState.Loading
             val result = _purchaseManager.getSubscriptionOptions()
@@ -84,8 +107,27 @@ class LoginViewModel(
 
     fun purchaseSubscription(subscription: SubscriptionOption) {
         viewModelScope.launch {
-            _purchaseManager.purchase(subscription)
+            _purchaseOptions.value = PurchaseOptionsState.Loading
+            when (val result = _purchaseManager.purchase(subscription)) {
+                is Result.Error -> _purchaseOptions.value = PurchaseOptionsState.Error(result.error.message)
+                is Result.Success -> { /* NO-OP isPremium is auto collected */}
+            }
         }
+    }
+
+    fun shareStorage(storage: Storage?, emails: Collection<String>) {
+        if (storage == null) _shareState.value = ShareState.Error(Res.string.no_storage_chosen)
+        else if (emails.isEmpty()) _shareState.value = ShareState.Error(Res.string.no_email_inputted)
+        else {
+            viewModelScope.launch {
+                _shareState.value = ShareState.Loading
+                //Do something here pls :)
+            }
+        }
+    }
+
+    fun resetShareStorageState() {
+        _shareState.value = ShareState.NotPerformed
     }
 }
 
@@ -103,4 +145,11 @@ sealed interface PurchaseOptionsState {
     data object Loading : PurchaseOptionsState
     data class Success(val options: List<SubscriptionOption>) : PurchaseOptionsState
     data class Error(val message: String) : PurchaseOptionsState
+}
+
+sealed interface ShareState {
+    data object NotPerformed : ShareState
+    data object Loading : ShareState
+    data object Success : ShareState
+    data class Error(val message: StringResource) : ShareState
 }

@@ -156,4 +156,9 @@ fun LocalDate.calculateReminder(amount: Int, type: RemindMeType): LocalDate {
     }
 }
 
+private val EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+fun String.isValidEmail(): Boolean {
+    return EMAIL_REGEX.matches(this)
+}
+
 expect fun LocalDate.toLocaleDisplayDate(locale: Locale): String

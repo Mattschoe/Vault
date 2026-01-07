@@ -128,4 +128,19 @@
     <string name="and_get">And get:</string>
     <string name="cloud_storage">Cloud Storage</string>
     <string name="sharing_storage_with_family">Sharing storage between family members</string>
+    <string name="try_again">Try again</string>
+    <string name="welcome_premium_title">Welcome to Premium!</string>
+    <string name="share_storage">Share storage</string>
+    <string name="select_storage">Select storage</string>
+    <string name="add_members">Add members</string>
+    <string name="email_example">user@example.com</string>
+    <string name="send_invites">Send Invites</string>
+    <string name="add_email">Add email</string>
+    <string name="invalid_email">Invalid email</string>
+    <string name="remove_email">Remove email</string>
+    <string name="share">Share!</string>
+    <string name="successful_share">Storage successfully shared to members</string>
+    <string name="no_storage_chosen">No storage chosen!</string>
+    <string name="no_email_inputted">No emails inputted!</string>
+    <string name="no_such_user">No such user:</string>
 </resources>

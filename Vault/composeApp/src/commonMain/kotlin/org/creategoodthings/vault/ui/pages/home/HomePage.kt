@@ -447,7 +447,7 @@ fun StorageStatusCard(
             .fillMaxWidth()
     ) {
         Column {
-            //region CHOOSE STORAGE + TOTAL Legend
+            //region CHOOSE STORAGE
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
