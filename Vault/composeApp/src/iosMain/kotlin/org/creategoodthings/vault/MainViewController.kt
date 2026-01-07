@@ -19,7 +19,7 @@ fun MainViewController() = ComposeUIViewController {
         val prefRepo = OfflinePreferencesRepository(dataStore)
         val notificationScheduler = IOSNotificationScheduler(prefRepo)
         AppContainer(
-            database = dbInstance,
+            _database = dbInstance,
             preferencesRepository = prefRepo,
             notificationScheduler = notificationScheduler,
             permissionController = permissionController

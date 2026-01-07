@@ -10,6 +10,7 @@
     <string name="days">days</string>
     <string name="weeks">weeks</string>
     <string name="months">months</string>
+    <string name="month">month</string>
     <string name="years">years</string>
     <string name="year">year</string>
     <string name="expires">Expires</string>
@@ -114,8 +115,17 @@
     <string name="username">Username</string>
     <string name="sign_up">Sign Up</string>
     <string name="log_in">Log In</string>
+    <string name="log_out">Log out</string>
     <string name="already_have_account">Already have an account? Log in</string>
+    <string name="here">here</string>
     <string name="dont_have_account">Don't have an account? Sign up</string>
     <string name="username_required">Username is required</string>
     <string name="username_or_email">Username or Email</string>
+    <string name="server_error">Server error, please try again later!</string>
+    <string name="wrong_username_or_password">Wrong username or password</string>
+    <string name="lets_go">Lets go!</string>
+    <string name="unlock_premium">Unlock Premium</string>
+    <string name="and_get">And get:</string>
+    <string name="cloud_storage">Cloud Storage</string>
+    <string name="sharing_storage_with_family">Sharing storage between family members</string>
 </resources>

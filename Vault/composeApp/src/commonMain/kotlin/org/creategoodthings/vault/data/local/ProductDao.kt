@@ -2,6 +2,7 @@ package org.creategoodthings.vault.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -77,5 +78,11 @@ interface ProductDao {
 
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE isDirty = true")
+    fun getAllDirtyProducts(): List<ProductEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun sync(product: ProductEntity)
     //endregion
 }

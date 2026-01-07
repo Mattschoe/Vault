@@ -22,7 +22,7 @@ fun main() = application {
         val scheduler = JvmNotificationScheduler()
         val permissionController = JvmPermissionController()
         AppContainer(
-            database = db,
+            _database = db,
             preferencesRepository = prefRepo,
             notificationScheduler = scheduler,
             permissionController = permissionController

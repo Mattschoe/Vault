@@ -18,8 +18,8 @@ import org.creategoodthings.vault.ui.pages.storage.StoragePage
 import org.creategoodthings.vault.ui.pages.storage.StoragePageViewModel
 import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPage
 import org.creategoodthings.vault.ui.pages.suggestionsPage.SuggestionsPageViewModel
-import org.creategoodthings.vault.ui.pages.register.LoginViewModel
-import org.creategoodthings.vault.ui.pages.register.RegisterPage
+import org.creategoodthings.vault.ui.pages.premium.LoginViewModel
+import org.creategoodthings.vault.ui.pages.premium.RegisterPage
 
 @Composable
 fun ApplicationNavigationHost(
@@ -100,7 +100,8 @@ fun ApplicationNavigationHost(
         composable<PageNavigation.Register> {
             val viewModel = viewModel<LoginViewModel> {
                 LoginViewModel(
-                    _authRepo = appContainer.authRepository
+                    _authRepo = appContainer.authRepository,
+                    _purchaseManager = appContainer.purchaseManager
                 )
             }
             RegisterPage(
