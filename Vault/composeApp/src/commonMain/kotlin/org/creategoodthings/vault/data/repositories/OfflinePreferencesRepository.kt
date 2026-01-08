@@ -7,11 +7,16 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalTime
+import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository.Keys.LAST_SYNC
+import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository.Keys.USER_ID
 import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
+import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.BEST_BEFORE
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.ui.pages.storage.SortOption
-import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.*
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 class OfflinePreferencesRepository(
     private val dataStore: DataStore<Preferences>
 ): PreferencesRepository {
@@ -22,6 +27,8 @@ class OfflinePreferencesRepository(
         val AM_PM = booleanPreferencesKey("amPm")
         val CONTAINER_SORT_ORDER = stringPreferencesKey("container_sort_order")
         val TOKEN = stringPreferencesKey("token") //TODO: This token HAS to be stored securely before any beta. See Log 08/01
+        val USER_ID = stringPreferencesKey("user_id")
+        val LAST_SYNC = stringPreferencesKey("last_sync")
     }
 
     override val standardStorageID = dataStore.data.map { preferences ->
@@ -45,6 +52,12 @@ class OfflinePreferencesRepository(
         if (sortOrder != null) ContainerSortOrder.valueOf(sortOrder)
         else BEST_BEFORE
     }
+    override val lastSync = dataStore.data.map {
+        val syncTime = it[LAST_SYNC]
+        if (syncTime == null) null
+        else Instant.parse(syncTime)
+    }
+    override val userID = dataStore.data.map { it[USER_ID] }
 
     override suspend fun setStandardStorageID(storageID: String) {
         dataStore.edit { preferences ->
@@ -76,5 +89,17 @@ class OfflinePreferencesRepository(
 
     override suspend fun clearToken() {
         dataStore.edit { it.remove(Keys.TOKEN) }
+    }
+
+    override suspend fun clearUserID() {
+        dataStore.edit { it.remove(USER_ID) }
+    }
+
+    override suspend fun setLastSync(newTime: Instant) {
+        dataStore.edit { it[LAST_SYNC] = newTime.toString() }
+    }
+
+    override suspend fun setUserID(userID: String) {
+        dataStore.edit { it[USER_ID] = userID }
     }
 }

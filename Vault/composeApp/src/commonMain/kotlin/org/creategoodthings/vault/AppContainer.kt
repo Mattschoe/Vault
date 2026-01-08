@@ -1,21 +1,24 @@
 package org.creategoodthings.vault
 
 import org.creategoodthings.vault.data.local.AppDatabase
+import org.creategoodthings.vault.data.network.PocketbaseSyncRepository
 import org.creategoodthings.vault.data.network.createHttpClient
 import org.creategoodthings.vault.data.repositories.KtorAuthRepository
 import org.creategoodthings.vault.data.repositories.OfflineProductRepository
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
+import org.creategoodthings.vault.domain.repositories.SyncRepository
 import org.creategoodthings.vault.domain.services.NotificationScheduler
 import org.creategoodthings.vault.domain.services.PermissionController
 import org.creategoodthings.vault.domain.services.PurchaseManager
+import org.creategoodthings.vault.domain.services.SyncManager
 
 class AppContainer(
     private val _database: AppDatabase,
     val preferencesRepository: PreferencesRepository,
     val notificationScheduler: NotificationScheduler,
     val permissionController: PermissionController,
-    val purchaseManager: PurchaseManager
+    val purchaseManager: PurchaseManager,
 ) {
     val productRepo: ProductRepository by lazy {
         OfflineProductRepository(_database.productDao())
@@ -32,4 +35,12 @@ class AppContainer(
         _prefRepo = preferencesRepository,
         _purchaseManager = purchaseManager
     )
+
+    val syncRepository = PocketbaseSyncRepository(
+        _productDao = _database.productDao(),
+        _pocketBaseClient = httpClient,
+        _prefRepo = preferencesRepository
+    )
+
+    val syncManager by lazy { SyncManager(syncRepository) }
 }

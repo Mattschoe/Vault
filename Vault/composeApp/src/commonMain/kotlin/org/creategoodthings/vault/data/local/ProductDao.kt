@@ -35,6 +35,7 @@ interface ProductDao {
     //endregion
 
     //region QUERIES
+
     @Query("SELECT name FROM storage WHERE ID = :storageID AND isDeleted = false")
     fun getStorageName(storageID: String): Flow<String>
 
@@ -82,7 +83,28 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE isDirty = true")
     fun getAllDirtyProducts(): List<ProductEntity>
 
+    @Query("SELECT * FROM storage WHERE isDirty = true")
+    fun getAllDirtyStorages(): List<StorageEntity>
+
+    @Query("SELECT * FROM container WHERE isDirty = true")
+    fun getAllDirtyContainers(): List<ContainerEntity>
+
+    @Query("UPDATE products SET isDirty = false WHERE ID = :productID")
+    fun markProductAsClean(productID: String)
+
+    @Query("UPDATE storage SET isDirty = false WHERE ID = :storageID")
+    fun markStorageAsClean(storageID: String)
+
+    @Query("UPDATE container SET isDirty = false WHERE ID = :containerID")
+    fun markContainerAsClean(containerID: String)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun sync(product: ProductEntity)
+    suspend fun syncProducts(products: List<ProductEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun syncStorages(storages: List<StorageEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun syncContainers(containers: List<ContainerEntity>)
     //endregion
 }

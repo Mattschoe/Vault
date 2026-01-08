@@ -12,6 +12,7 @@ import io.ktor.http.headers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import org.creategoodthings.vault.config.AppConfig
 import org.creategoodthings.vault.data.network.AuthResponseDTO
 import org.creategoodthings.vault.data.network.LoginRequestDTO
 import org.creategoodthings.vault.data.network.RegisterRequestDTO
@@ -22,9 +23,7 @@ import org.creategoodthings.vault.domain.repositories.AuthRepository
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.services.PurchaseManager
 
-private const val AUTH_REFRESH = "/api/collections/users/auth-refresh"
-private const val AUTH_WITH_PASSWORD = "/api/collections/users/auth-with-password"
-private const val RECORDS = "/api/collections/users/records"
+
 
 class KtorAuthRepository(
     private val _client: HttpClient,
@@ -42,13 +41,14 @@ class KtorAuthRepository(
                 return Result.Error(NetworkError("token is null or blank")) //TODO: Det her skal proporgates til UI så de kan informeres om at der ikke er internet connection
             }
 
-            val response = _client.post(AUTH_REFRESH) {
+            val response = _client.post(AppConfig.AUTH_REFRESH_ENDPOINT) {
                 bearerAuth(savedToken)
             }
 
             if (response.status.value in 200..299) {
                 val data = response.body<AuthResponseDTO>()
                 _prefRepo.setToken(data.token)
+                _prefRepo.setUserID(data.record.ID)
                 _currentUser.value = data.toDomain()
             } else {
                 return Result.Error(NetworkError("Server rejected token: ${response.status}"))
@@ -58,6 +58,7 @@ class KtorAuthRepository(
             return Result.Error(NetworkError("Network unavailable. Keeping token."))
         } catch (e: Exception) {
             _prefRepo.clearToken()
+            _prefRepo.clearUserID()
             _currentUser.value = null
             return Result.Error(NetworkError("Unexpected initialization error: ${e.message}"))
         }
@@ -66,11 +67,12 @@ class KtorAuthRepository(
 
     override suspend fun login(email: String, password: String): Result<Unit, NetworkError> {
         return try {
-            val response = _client.post(AUTH_WITH_PASSWORD) {
+            val response = _client.post(AppConfig.AUTH_WITH_PASSWORD_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 setBody(LoginRequestDTO(identity = email, password = password))
             }.body<AuthResponseDTO>()
             _prefRepo.setToken(response.token)
+            _prefRepo.setUserID(response.record.ID)
             _currentUser.value = response.toDomain()
             _purchaseManager.logIn(_currentUser.value!!.ID)
             Result.Success(Unit)
@@ -81,7 +83,7 @@ class KtorAuthRepository(
 
     override suspend fun register(username: String, email: String, password: String): Result<Unit, NetworkError>  {
         return try {
-            _client.post(RECORDS) {
+            _client.post(AppConfig.RECORDS_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 setBody(
                     RegisterRequestDTO(
@@ -102,13 +104,14 @@ class KtorAuthRepository(
     override suspend fun logout() {
         _purchaseManager.logOut()
         _prefRepo.clearToken()
+        _prefRepo.clearUserID()
         _currentUser.value = null
     }
 
     override suspend fun refreshUser(): Result<Unit, NetworkError> {
         return try {
             val currentToken = _prefRepo.token.first() ?: return Result.Error(NetworkError("No token"))
-            val response = _client.post(AUTH_REFRESH) {
+            val response = _client.post(AppConfig.AUTH_REFRESH_ENDPOINT) {
                 headers { bearerAuth(currentToken) }
             }.body<AuthResponseDTO>()
             _currentUser.value = response.toDomain()

@@ -113,6 +113,8 @@ fun HomePage(
     val user = remember { "Matthias" }
     val dataState by viewModel.uiState.collectAsState()
 
+    val syncError by viewModel.syncError.collectAsState()
+
     //DRAG STATE
     var dragState by remember { mutableStateOf(DragState()) }
     val dropZones = remember { mutableStateMapOf<String, DropZone>() }
@@ -167,6 +169,7 @@ fun HomePage(
             val storage2Containers = dataState.storages
             val selectedStorage = dataState.selectedStorage
             var showAddProductDialog by remember { mutableStateOf(false) }
+
 
             //region PAGESHELL UI
             PageShell(

@@ -1,11 +1,9 @@
 package org.creategoodthings.vault.data.local
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 import kotlinx.datetime.LocalDate
 
 @Entity(

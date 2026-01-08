@@ -10,7 +10,6 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.client.plugins.logging.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.forEach
 import kotlinx.serialization.json.Json
 import org.creategoodthings.vault.config.AppConfig
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository

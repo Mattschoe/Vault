@@ -1,6 +1,5 @@
 package org.creategoodthings.vault.ui.pages.premium
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,8 +80,9 @@ class LoginViewModel(
                 )
             }
 
-            result.onFailure { error ->
-                _uiState.update { it.copy(isLoading = false, error = error.message) }
+            when (result) {
+                is Result.Success -> _uiState.update { it.copy(isLoading = false, error = null) }
+                is Result.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.message) }
             }
         }
     }

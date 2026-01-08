@@ -19,13 +19,17 @@ import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.repositories.StorageWithProducts
 import org.creategoodthings.vault.domain.services.NotificationScheduler
 import org.creategoodthings.vault.domain.services.PermissionController
+import org.creategoodthings.vault.domain.services.PurchaseManager
+import org.creategoodthings.vault.domain.services.SyncManager
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomePageViewModel(
     private val _productRepo: ProductRepository,
     private val _preferencesRepo: PreferencesRepository,
     private val _notificationScheduler: NotificationScheduler,
-    private val _permissionController: PermissionController
+    private val _permissionController: PermissionController,
+    private val _syncManager: SyncManager,
+    private val _purchaseManager: PurchaseManager
 ): ViewModel() {
     private val _products = _productRepo.getProductsOrderedByBB()
     private val _storages = _productRepo.getStoragesWithContainersShell()
@@ -41,6 +45,9 @@ class HomePageViewModel(
             }
         }
     }
+
+    val isPremium = _purchaseManager.isPremium
+    val syncError = _syncManager.lastError
 
     val uiState = combine(
         _products,
@@ -62,18 +69,21 @@ class HomePageViewModel(
     fun addProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.insertProduct(product)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.deleteProduct(product)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun changeStorage(newStorage: Storage) {
         viewModelScope.launch {
             _preferencesRepo.setStandardStorageID(newStorage.ID)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
@@ -81,12 +91,14 @@ class HomePageViewModel(
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
             if (changeToStore) _preferencesRepo.setStandardStorageID(storage.ID)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun addContainer(container: Container) {
         viewModelScope.launch {
             _productRepo.insertContainer(container)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 }
