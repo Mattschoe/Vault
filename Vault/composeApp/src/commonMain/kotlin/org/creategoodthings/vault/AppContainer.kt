@@ -22,7 +22,9 @@ class AppContainer(
     }
 
     val httpClient by lazy {
-        createHttpClient()
+        createHttpClient(
+            prefRepo = preferencesRepository
+        )
     }
 
     val authRepository = KtorAuthRepository(

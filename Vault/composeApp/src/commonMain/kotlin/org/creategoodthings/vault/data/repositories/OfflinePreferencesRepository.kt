@@ -21,7 +21,7 @@ class OfflinePreferencesRepository(
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
         val AM_PM = booleanPreferencesKey("amPm")
         val CONTAINER_SORT_ORDER = stringPreferencesKey("container_sort_order")
-        val TOKEN = stringPreferencesKey("token")
+        val TOKEN = stringPreferencesKey("token") //TODO: This token HAS to be stored securely before any beta. See Log 08/01
     }
 
     override val standardStorageID = dataStore.data.map { preferences ->
