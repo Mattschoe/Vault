@@ -59,7 +59,9 @@ fun ApplicationNavigationHost(
                         appContainer.productRepo,
                     appContainer.preferencesRepository,
                     appContainer.notificationScheduler,
-                    appContainer.permissionController
+                    appContainer.permissionController,
+                    _syncManager = appContainer.syncManager,
+                    _purchaseManager = appContainer.purchaseManager
                 )
             }
             StoragePage(

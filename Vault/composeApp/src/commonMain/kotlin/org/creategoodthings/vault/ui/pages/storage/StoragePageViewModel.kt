@@ -18,6 +18,8 @@ import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.services.NotificationScheduler
 import org.creategoodthings.vault.domain.services.PermissionController
+import org.creategoodthings.vault.domain.services.PurchaseManager
+import org.creategoodthings.vault.domain.services.SyncManager
 import org.creategoodthings.vault.ui.pages.home.StorageUIState
 import org.creategoodthings.vault.ui.pages.storage.SortOption.*
 
@@ -28,7 +30,11 @@ class StoragePageViewModel(
     private val _prefRepo: PreferencesRepository,
     private val _notificationScheduler: NotificationScheduler,
     private val _permissionController: PermissionController,
+    private val _syncManager: SyncManager,
+    private val _purchaseManager: PurchaseManager,
 ): ViewModel() {
+    val isPremium = _purchaseManager.isPremium
+
     val storages = _productRepo.getStoragesWithContainersShell().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -120,18 +126,21 @@ class StoragePageViewModel(
     fun updateStorageName(newName: String) {
         viewModelScope.launch {
             _productRepo.updateStorage(Storage(ID = _storageID, name = newName))
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun addProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.insertProduct(product)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.deleteProduct(product)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
@@ -139,12 +148,14 @@ class StoragePageViewModel(
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
             if (changeToStore) _prefRepo.setStandardStorageID(storage.ID)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
     fun addContainer(container: Container) {
         viewModelScope.launch {
             _productRepo.insertContainer(container)
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 
@@ -155,6 +166,7 @@ class StoragePageViewModel(
     fun changeProductContainer(product: Product, newContainer: Container?) {
         viewModelScope.launch {
             _productRepo.updateProduct(product.copy(containerID = newContainer?.ID))
+            if (isPremium.value) _syncManager.startSync()
         }
     }
 }
@@ -172,20 +184,3 @@ enum class SortOption {
     CONTAINER,
     BEST_BEFORE
 }
-
-/*
-USE THIS IN STORAGE VIEWMODEL
-private val _sortOption = MutableStateFlow(SortOption.BEST_BEFORE)
-@OptIn(ExperimentalCoroutinesApi::class)
-val products = _sortOption.flatMapLatest { sortOrder ->
-    when (sortOrder) {
-        ALPHABET -> _productRepo.getAllProductsOrderedByAlphabet()
-        STORAGE -> _productRepo.getStorageWithProductsOrderedByBB()
-        BEST_BEFORE -> _productRepo.getProductsOrderedByBB()
-    }
-}.stateIn(
-    scope = viewModelScope,
-    started = SharingStarted.WhileSubscribed(5_000),
-    initialValue = emptyList()
-)
-*/
