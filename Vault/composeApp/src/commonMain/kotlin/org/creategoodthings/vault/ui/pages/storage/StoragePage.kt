@@ -204,6 +204,7 @@ fun StoragePage(
                                         }
                                     },
                                     modifier = Modifier
+                                        .fillMaxWidth()
                                         .focusRequester(focusRequester)
                                         .onFocusChanged { focusState ->
                                             if (focusState.isFocused) {
@@ -244,25 +245,27 @@ fun StoragePage(
                                 }
                             }
                         }
-                        Icon(
-                            imageVector = vectorResource(
-                                when (sortOption) {
-                                    ALPHABET -> Res.drawable.alphabet_icon
-                                    BEST_BEFORE -> Res.drawable.calendar_icon
-                                    CONTAINER -> Res.drawable.category_icon
-                                }
-                            ),
-                            contentDescription = stringResource(
-                                when (sortOption) {
-                                    ALPHABET -> Res.string.sorted_alphabetically
-                                    BEST_BEFORE -> Res.string.sorted_bb
-                                    CONTAINER -> Res.string.sorted_containers
-                                }
-                            ),
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clickable { viewModel.toggleBetweenSortOption() }
-                        )
+                        if (!editStorageName) {
+                            Icon(
+                                imageVector = vectorResource(
+                                    when (sortOption) {
+                                        ALPHABET -> Res.drawable.alphabet_icon
+                                        BEST_BEFORE -> Res.drawable.calendar_icon
+                                        CONTAINER -> Res.drawable.category_icon
+                                    }
+                                ),
+                                contentDescription = stringResource(
+                                    when (sortOption) {
+                                        ALPHABET -> Res.string.sorted_alphabetically
+                                        BEST_BEFORE -> Res.string.sorted_bb
+                                        CONTAINER -> Res.string.sorted_containers
+                                    }
+                                ),
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clickable { viewModel.toggleBetweenSortOption() }
+                            )
+                        }
                     }
                 }
                 //endregion
