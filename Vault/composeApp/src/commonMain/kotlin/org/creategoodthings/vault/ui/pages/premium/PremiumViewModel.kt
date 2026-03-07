@@ -16,6 +16,7 @@ import org.creategoodthings.vault.domain.services.PurchaseManager
 import org.creategoodthings.vault.domain.services.SubscriptionOption
 import org.jetbrains.compose.resources.StringResource
 import vault.composeapp.generated.resources.Res
+import vault.composeapp.generated.resources.couldnt_find_users_with_email
 import vault.composeapp.generated.resources.no_email_inputted
 import vault.composeapp.generated.resources.no_storage_chosen
 
@@ -32,6 +33,8 @@ class LoginViewModel(
 
     private val _shareState = MutableStateFlow<ShareState>(ShareState.NotPerformed)
     val shareState = _shareState.asStateFlow()
+    private val _errorEmails = MutableStateFlow<List<String>>(emptyList())
+    val errorEmails = _errorEmails.asStateFlow()
 
     val isPremium = _purchaseManager.isPremium
 
@@ -121,7 +124,18 @@ class LoginViewModel(
         else {
             viewModelScope.launch {
                 _shareState.value = ShareState.Loading
-                //Do something here pls :)
+                _errorEmails.value = emptyList()
+
+                val failed = mutableListOf<String>()
+                emails.forEach { email ->
+                    when (_authRepo.inviteUserToStorage(storage.ID, email)) {
+                        is Result.Error -> failed.add(email)
+                        is Result.Success -> {}
+                    }
+                }
+                _errorEmails.value = failed
+                if (failed.isEmpty()) _shareState.value = ShareState.Success
+                else _shareState.value = ShareState.Error(Res.string.couldnt_find_users_with_email)
             }
         }
     }

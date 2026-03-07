@@ -14,6 +14,7 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.flow.first
 import org.creategoodthings.vault.config.AppConfig
 import org.creategoodthings.vault.data.local.ProductDao
+import org.creategoodthings.vault.domain.InviteError
 import org.creategoodthings.vault.domain.Result
 import org.creategoodthings.vault.domain.Result.*
 import org.creategoodthings.vault.domain.SyncError
@@ -30,13 +31,13 @@ class PocketbaseSyncRepository(
     private val _prefRepo: PreferencesRepository
 ): SyncRepository {
     override suspend fun sync(): Result<Unit, SyncError> {
-        val userID = _prefRepo.userID.first() ?: return Result.Error(SyncError("User not validated"))
+        val userID = _prefRepo.userID.first() ?: return Error(SyncError("User not validated"))
         run {
             if (pushStorages(userID) is Error) return@run
             if (pushContainers() is Error) return@run
             if (pushProducts() is Error) return@run
         }
-        val lastSync = _prefRepo.lastSync.first()
+        val lastSync = _prefRepo.lastSync.first()?.toString() ?: ""
         return when (val pullResult = pullChanges(lastSync.toString())) {
             is Error -> Error(pullResult.error)
             is Success -> {
@@ -51,15 +52,15 @@ class PocketbaseSyncRepository(
             val filter = if (lastSync != null) "updated >= '$lastSync'" else ""
             val remoteStorages = _pocketBaseClient.get(AppConfig.STORAGES_ENDPOINT) {
                 parameter("filter", filter)
-            }.body<List<StorageDTO>>()
+            }.body<PocketBaseResponse<StorageDTO>>().items
 
             val remoteContainers = _pocketBaseClient.get(AppConfig.CONTAINERS_ENDPOINT) {
                 parameter("filter", filter)
-            }.body<List<ContainerDTO>>()
+            }.body<PocketBaseResponse<ContainerDTO>>().items
 
             val remoteProducts = _pocketBaseClient.get(AppConfig.PRODUCTS_ENDPOINT) {
                 parameter("filter", filter)
-            }.body<List<ProductDTO>>()
+            }.body<PocketBaseResponse<ProductDTO>>().items
 
             _productDao.syncStorages(remoteStorages.map { it.toEntity(false) })
             _productDao.syncContainers(remoteContainers.map { it.toEntity(false) })
@@ -164,4 +165,6 @@ class PocketbaseSyncRepository(
         }
         return Success(Unit)
     }
+
+
 }

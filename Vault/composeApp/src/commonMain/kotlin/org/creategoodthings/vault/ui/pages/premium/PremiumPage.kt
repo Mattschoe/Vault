@@ -120,6 +120,7 @@ fun RegisterPage(
     val shareState by viewModel.shareState.collectAsState()
     val isPremium by viewModel.isPremium.collectAsState()
     val storages by viewModel.storages.collectAsState()
+    val errorEmails by viewModel.errorEmails.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var openPurchaseWindow by remember { mutableStateOf(false) }
     var emailInput by remember { mutableStateOf("") }
@@ -367,10 +368,19 @@ fun RegisterPage(
                                             )
                                         }
                                         is ShareState.Error -> {
-                                            Text(
-                                                text = stringResource(state.message),
-                                                color = MaterialTheme.colorScheme.error
-                                            )
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(
+                                                    text = stringResource(state.message),
+                                                    color = MaterialTheme.colorScheme.error
+                                                )
+                                                errorEmails.forEach { email ->
+                                                    Text(
+                                                        text = email,
+                                                        color = MaterialTheme.colorScheme.error,
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
                                         }
                                         ShareState.Loading -> {
                                             CircularProgressIndicator(
@@ -389,11 +399,7 @@ fun RegisterPage(
                         }
                     }
                 }
-
-
-
             }
-
         } else if (!state.isSuccess) {
             //region LOG IN/REGISTER
             Column(

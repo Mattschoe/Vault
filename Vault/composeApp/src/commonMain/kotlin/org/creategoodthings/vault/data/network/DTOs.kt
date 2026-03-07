@@ -11,9 +11,24 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @Serializable
+data class InviteRequestDTO(
+    @SerialName("to_email") val email: String,
+    @SerialName("storage_id") val storageID: String
+)
+
+@Serializable
 data class AuthResponseDTO(
     @SerialName("token") val token: String,
     @SerialName("record") val record: UserDTO
+)
+
+@Serializable
+data class PocketBaseResponse<T>(
+    val page: Int,
+    val perPage: Int,
+    val totalItems: Int,
+    val totalPages: Int,
+    val items: List<T>
 )
 
 @Serializable

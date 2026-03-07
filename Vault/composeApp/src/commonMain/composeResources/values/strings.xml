@@ -93,7 +93,7 @@
     <string name="onion">Onion</string>
     <string name="garlic">Garlic</string>
     <string name="carrots">Carrots</string>
-    <string name="apples">Apples</string>
+    <string name="apples">Apples</string> 
     <string name="lemons">Lemons</string>
     <string name="suggestions_page_title">Let's start by adding some products!</string>
     <string name="suggestions_bottom_text">Don't worry you can always change the naming or add more products later</string>
@@ -143,4 +143,5 @@
     <string name="no_storage_chosen">No storage chosen!</string>
     <string name="no_email_inputted">No emails inputted!</string>
     <string name="no_such_user">No such user:</string>
+    <string name="couldnt_find_users_with_email">Couldn't find any users with the following emails:</string>
 </resources>

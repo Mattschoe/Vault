@@ -17,7 +17,7 @@ class SyncManager(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _isSyncing = MutableStateFlow(false)
-    val isSyncing = _isSyncing.asStateFlow()
+    val isSyncing = _isSyncing.asStateFlow() //TODO skal propargates op til UIww
 
     private val _lastError = MutableStateFlow<SyncError?>(null)
     val lastError = _lastError.asStateFlow()
