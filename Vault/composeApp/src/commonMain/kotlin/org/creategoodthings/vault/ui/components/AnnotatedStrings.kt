@@ -49,5 +49,6 @@ fun TextWithLink(
 
     Text(
         text = annotatedText,
+        modifier = modifier
     )
 }

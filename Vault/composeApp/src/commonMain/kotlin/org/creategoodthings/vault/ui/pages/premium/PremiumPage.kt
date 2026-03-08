@@ -36,6 +36,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +62,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,13 +104,17 @@ import vault.composeapp.generated.resources.choose_storage
 import vault.composeapp.generated.resources.close_icon
 import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
+import vault.composeapp.generated.resources.hide_password
 import vault.composeapp.generated.resources.invalid_email
 import vault.composeapp.generated.resources.remove_email
 import vault.composeapp.generated.resources.select_storage
 import vault.composeapp.generated.resources.share
 import vault.composeapp.generated.resources.share_storage
+import vault.composeapp.generated.resources.show_password
 import vault.composeapp.generated.resources.successful_share
 import vault.composeapp.generated.resources.try_again
+import vault.composeapp.generated.resources.visibility_off
+import vault.composeapp.generated.resources.visibility_on
 import vault.composeapp.generated.resources.welcome_premium_title
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +136,7 @@ fun RegisterPage(
     var hasEmailError by remember { mutableStateOf(false) }
     var showChooseStorage by remember { mutableStateOf(false) }
     var selectedStorage by remember { mutableStateOf<Storage?>(null) }
-
+    var passwordVisible by remember { mutableStateOf(false) }
 
     fun addEmail() {
         val trimmed = emailInput.trim()
@@ -451,7 +458,28 @@ fun RegisterPage(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        val (image, description) =
+                            if (passwordVisible) {
+                                Pair(
+                                    vectorResource(Res.drawable.visibility_on),
+                                    stringResource(Res.string.hide_password)
+                                )
+                            } else {
+                                Pair(
+                                    vectorResource(Res.drawable.visibility_off),
+                                    stringResource(Res.string.show_password)
+                                )
+                            }
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = image,
+                                contentDescription = description
+                            )
+                        }
+                    }
                 )
 
                 if (state.error != null) {
