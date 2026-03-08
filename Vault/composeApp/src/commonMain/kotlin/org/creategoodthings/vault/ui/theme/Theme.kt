@@ -1,7 +1,6 @@
 package org.creategoodthings.vault.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -41,7 +40,7 @@ fun VaultTheme(content: @Composable () -> Unit) {
 
     MaterialTheme(
         colorScheme = LightColorScheme,
-        typography = Typography,
+        typography = appTypography(),
         content = content
     )
 }
