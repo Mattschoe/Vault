@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.services.SubscriptionOption
+import org.creategoodthings.vault.ui.components.TextWithLink
 import org.creategoodthings.vault.ui.isValidEmail
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.creategoodthings.vault.ui.theme.MustardContainer
@@ -400,6 +401,7 @@ fun RegisterPage(
                     }
                 }
             }
+            //endregion
         } else if (!state.isSuccess) {
             //region LOG IN/REGISTER
             Column(
@@ -472,11 +474,11 @@ fun RegisterPage(
                         Text(stringResource(if (state.isRegisterMode) Res.string.sign_up else Res.string.log_in))
                     }
 
-                    TextButton(
-                        onClick = viewModel::toggleMode
-                    ) {
-                        Text(stringResource(if (state.isRegisterMode) Res.string.already_have_account else Res.string.dont_have_account))
-                    }
+                    TextWithLink(
+                        prefixText = stringResource( if (state.isRegisterMode) Res.string.already_have_account else Res.string.dont_have_account),
+                        linkText = stringResource(if (state.isRegisterMode) Res.string.log_in else Res.string.sign_up),
+                        onSignUpClick = viewModel::toggleMode
+                    )
                 }
             }
             //endregion
