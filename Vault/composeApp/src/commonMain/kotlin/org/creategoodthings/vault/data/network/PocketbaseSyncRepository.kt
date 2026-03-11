@@ -121,7 +121,7 @@ class PocketbaseSyncRepository(
                             contentType(ContentType.Application.Json)
                             setBody(dto.copy(users = listOf(currentUserID)))
                         }
-                        _productDao.markProductAsClean(entity.ID)
+                        _productDao.markStorageAsClean(entity.ID)
                     } catch (e: Exception) {
                         return Error(SyncError(e.message ?: "Unable to sync product: $entity"))
                     }
@@ -165,6 +165,4 @@ class PocketbaseSyncRepository(
         }
         return Success(Unit)
     }
-
-
 }
