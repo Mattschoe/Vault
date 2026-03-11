@@ -22,6 +22,8 @@ interface PreferencesRepository {
     //region NETWORKING
     val token: Flow<String?>
     val userID: Flow<String?>
+    val email: Flow<String?>
+    val isPremium: Flow<Boolean>
     val lastSync: Flow<Instant?>
     //endregion
 
@@ -34,6 +36,9 @@ interface PreferencesRepository {
     suspend fun clearToken()
     suspend fun setUserID(userID: String)
     suspend fun clearUserID()
+    suspend fun setEmail(email: String)
+    suspend fun clearEmail()
+    suspend fun setIsPremium(isPremium: Boolean)
     suspend fun setLastSync(newTime: Instant)
 }
 
