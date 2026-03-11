@@ -14,11 +14,13 @@ import androidx.navigation.NavHostController
 fun PageShell(
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)? = null,
+    bottomBar: @Composable () -> Unit = {},
     pageContent: @Composable (PaddingValues) -> Unit,
 ) {
     Box {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            bottomBar = bottomBar,
             floatingActionButton = { if (floatingActionButton != null) floatingActionButton() },
         ) { innerPadding ->
             val padding = PaddingValues(

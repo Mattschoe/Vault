@@ -5,9 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalTime
 import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository.Keys.LAST_SYNC
@@ -32,6 +30,8 @@ class OfflinePreferencesRepository(
         val CONTAINER_SORT_ORDER = stringPreferencesKey("container_sort_order")
         val TOKEN = stringPreferencesKey("token") //TODO: This token HAS to be stored securely before any beta. See Log 08/01
         val USER_ID = stringPreferencesKey("user_id")
+        val EMAIL = stringPreferencesKey("email")
+        val IS_PREMIUM = booleanPreferencesKey("is_premium")
         val LAST_SYNC = stringPreferencesKey("last_sync")
     }
 
@@ -62,6 +62,8 @@ class OfflinePreferencesRepository(
         else Instant.parse(syncTime)
     }
     override val userID = dataStore.data.map { it[USER_ID] }
+    override val email = dataStore.data.map { it[Keys.EMAIL] }
+    override val isPremium = dataStore.data.map { it[Keys.IS_PREMIUM] == true }
 
     override suspend fun setStandardStorageID(storageID: StorageID) {
         dataStore.edit { preferences ->
@@ -97,6 +99,18 @@ class OfflinePreferencesRepository(
 
     override suspend fun clearUserID() {
         dataStore.edit { it.remove(USER_ID) }
+    }
+
+    override suspend fun setEmail(email: String) {
+        dataStore.edit { it[Keys.EMAIL] = email }
+    }
+
+    override suspend fun clearEmail() {
+        dataStore.edit { it.remove(Keys.EMAIL) }
+    }
+
+    override suspend fun setIsPremium(isPremium: Boolean) {
+        dataStore.edit { it[Keys.IS_PREMIUM] = isPremium }
     }
 
     override suspend fun setLastSync(newTime: Instant) {

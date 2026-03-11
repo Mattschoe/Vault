@@ -97,7 +97,7 @@ class PocketbaseSyncRepository(
                     return Error(SyncError("Error updating product: $entity"))
                 }
             } catch (e: Exception) {
-                return Error(SyncError(e.message ?: "Unknow error trying to sync product: $entity"))
+                return Error(SyncError(e.message ?: "Unknown error trying to sync product: $entity"))
             }
         }
         return Success(Unit)
@@ -152,7 +152,7 @@ class PocketbaseSyncRepository(
                             contentType(ContentType.Application.Json)
                             setBody(entity.toDTO())
                         }
-                         _productDao.markProductAsClean(entity.ID)
+                         _productDao.markContainerAsClean(entity.ID)
                     } catch (e: Exception) {
                         return Error(SyncError(e.message ?: "Unable to sync product: $entity"))
                     }

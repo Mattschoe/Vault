@@ -64,7 +64,7 @@ class KtorAuthRepository(
             _prefRepo.clearToken()
             _prefRepo.clearUserID()
             _currentUser.value = null
-            return Result.Error(NetworkError("Unexpected initialization error: ${e.message}"))
+            return Error(NetworkError("Unexpected initialization error: ${e.message}"))
         }
         return Success(Unit)
     }
@@ -79,9 +79,9 @@ class KtorAuthRepository(
             _prefRepo.setUserID(response.record.ID)
             _currentUser.value = response.toDomain()
             _purchaseManager.logIn(_currentUser.value!!.ID)
-            Result.Success(Unit)
+            Success(Unit)
         } catch (e: Exception) {
-            Result.Error(NetworkError(e.message ?: "Error trying to log in"))
+            Error(NetworkError(e.message ?: "Error trying to log in"))
         }
     }
 
@@ -99,9 +99,9 @@ class KtorAuthRepository(
                 )
             }
             login(email, password) //Auto login for better UX
-            Result.Success(Unit)
+            Success(Unit)
         } catch (e: Exception) {
-            Result.Error(NetworkError(e.message ?: "Error trying to register!"))
+            Error(NetworkError(e.message ?: "Error trying to register!"))
         }
     }
 
@@ -114,14 +114,14 @@ class KtorAuthRepository(
 
     override suspend fun refreshUser(): Result<Unit, NetworkError> {
         return try {
-            val currentToken = _prefRepo.token.first() ?: return Result.Error(NetworkError("No token"))
+            val currentToken = _prefRepo.token.first() ?: return Error(NetworkError("No token"))
             val response = _client.post(AppConfig.AUTH_REFRESH_ENDPOINT) {
                 headers { bearerAuth(currentToken) }
             }.body<AuthResponseDTO>()
             _currentUser.value = response.toDomain()
-            Result.Success(Unit)
+            Success(Unit)
         } catch (e: Exception) {
-            Result.Error(NetworkError(e.message ?: "Error trying to refresh user"))
+            Error(NetworkError(e.message ?: "Error trying to refresh user"))
         }
     }
 

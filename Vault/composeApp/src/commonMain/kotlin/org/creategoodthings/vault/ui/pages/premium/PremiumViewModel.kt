@@ -10,10 +10,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Result
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.ui.isValidEmail
 import org.creategoodthings.vault.domain.repositories.AuthRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.services.PurchaseManager
 import org.creategoodthings.vault.domain.services.SubscriptionOption
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.*
 import org.jetbrains.compose.resources.StringResource
 import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.couldnt_find_users_with_email
@@ -60,11 +62,26 @@ class LoginViewModel(
     fun onEmailChange(newEmail: String) { _uiState.update { it.copy(email = newEmail, error = null) }}
     fun onPasswordChange(newPassword: String) { _uiState.update { it.copy(password = newPassword, error = null) } }
     fun toggleMode() { _uiState.update { it.copy(isRegisterMode = !it.isRegisterMode, error = null) }}
+
+    /**
+     * Used to submit either sign-ups or sign-ins.
+     * Uses the current state of [LoginUIState]
+     */
     fun submit() {
         val currentState = _uiState.value
         if (currentState.isLoading) return
         if (currentState.isRegisterMode && currentState.username.isBlank()) {
-            _uiState.update { it.copy(error = "Username is required") } //TODO find en måde at gøre det her non english only
+            _uiState.update { it.copy(error = BLANK_USERNAME) }
+            return
+        }
+
+        if (!currentState.email.isValidEmail()) {
+            _uiState.update { it.copy(error = INVALID_EMAIL) }
+            return
+        }
+
+        if (currentState.password.isBlank()) {
+            _uiState.update { it.copy(error = BLANK_PASSWORD) }
             return
         }
 
@@ -85,7 +102,7 @@ class LoginViewModel(
 
             when (result) {
                 is Result.Success -> _uiState.update { it.copy(isLoading = false, error = null) }
-                is Result.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.message) }
+                is Result.Error -> { _uiState.update { it.copy(isLoading = false, error = NETWORK_ERROR) } }
             }
         }
     }
@@ -151,9 +168,16 @@ data class LoginUIState(
     val password: String = "",
     val isRegisterMode: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: LoginStateError? = null,
     val isSuccess: Boolean = false
 )
+
+enum class LoginStateError {
+    BLANK_USERNAME,
+    BLANK_PASSWORD,
+    INVALID_EMAIL,
+    NETWORK_ERROR,
+}
 
 sealed interface PurchaseOptionsState {
     data object Loading : PurchaseOptionsState
