@@ -151,7 +151,22 @@ fun RegisterPage(
         }
     }
 
-    PageShell { padding ->
+    PageShell(
+        bottomBar = {
+            if (state.isSuccess) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = viewModel::logOut) {
+                        Text(stringResource(Res.string.log_out))
+                    }
+                    Spacer(Modifier.height(24.dp))
+                }
+            }
+        }
+    ) { padding ->
         if (isPremium) {
             //region IS_PREMIUM
             LazyColumn(
@@ -168,9 +183,8 @@ fun RegisterPage(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                item {
-                    Spacer(Modifier.height(24.dp))
-                }
+                item { Spacer(Modifier.height(24.dp)) }
+                //region SHARE STORAGE
                 item {
                     Card(
                         shape = RoundedCornerShape(12.dp),
@@ -407,6 +421,7 @@ fun RegisterPage(
                         }
                     }
                 }
+                //endregion
             }
             //endregion
         } else if (!state.isSuccess) {
@@ -511,6 +526,7 @@ fun RegisterPage(
             }
             //endregion
         } else if (state.isSuccess) {
+            //region LOGGED IN, BUT NO PREMIUM
             Column(
                 modifier = Modifier
                     .padding(padding)
@@ -519,15 +535,11 @@ fun RegisterPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                TextButton(
-                    onClick = { openPurchaseWindow = true }
-                ) {
+                TextButton(onClick = { openPurchaseWindow = true }) {
                     Text("Unlock premium")
                 }
 
-                TextButton(
-                    onClick = viewModel::logOut
-                ) {
+                TextButton(onClick = viewModel::logOut) {
                     Text(stringResource(Res.string.log_out))
                 }
             }
@@ -664,7 +676,7 @@ fun RegisterPage(
                     //endregion
                 }
             }
-
+            //endregion
         }
     }
 }
