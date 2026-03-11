@@ -65,6 +65,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
                 api(libs.datastore.preferences)
                 api(libs.datastore)
 
+                //Secure Storage
+                implementation(libs.ksafe)
+
                 //Ktor
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
