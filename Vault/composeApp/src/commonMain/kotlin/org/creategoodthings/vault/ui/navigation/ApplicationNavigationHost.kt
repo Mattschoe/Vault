@@ -109,10 +109,7 @@ fun ApplicationNavigationHost(
                     _purchaseManager = appContainer.purchaseManager
                 )
             }
-            RegisterPage(
-                navController = navController,
-                viewModel = viewModel
-            )
+            RegisterPage(viewModel = viewModel)
         }
     }
 }
