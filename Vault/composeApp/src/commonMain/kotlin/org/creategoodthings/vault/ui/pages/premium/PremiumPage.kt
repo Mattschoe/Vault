@@ -538,10 +538,6 @@ fun RegisterPage(
                 TextButton(onClick = { openPurchaseWindow = true }) {
                     Text("Unlock premium")
                 }
-
-                TextButton(onClick = viewModel::logOut) {
-                    Text(stringResource(Res.string.log_out))
-                }
             }
 
             if (openPurchaseWindow) {
