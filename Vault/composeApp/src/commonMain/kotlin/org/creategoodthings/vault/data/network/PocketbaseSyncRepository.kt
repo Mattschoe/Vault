@@ -129,7 +129,7 @@ class PocketbaseSyncRepository(
                     return Error(SyncError(e.message))
                 }
             } catch (e: Exception) {
-                return Error(SyncError(e.message ?: "Unknown error trying to sync product: $entity"))
+                return Error(SyncError(e.message ?: "Unknow error trying to sync product: $entity"))
             }
         }
         return Success(Unit)
