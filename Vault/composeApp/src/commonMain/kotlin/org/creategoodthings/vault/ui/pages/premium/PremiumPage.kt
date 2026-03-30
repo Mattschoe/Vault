@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -73,6 +74,7 @@ import org.creategoodthings.vault.domain.services.SubscriptionOption
 import org.creategoodthings.vault.ui.components.TextWithLink
 import org.creategoodthings.vault.ui.isValidEmail
 import org.creategoodthings.vault.ui.pages.PageShell
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.*
 import org.creategoodthings.vault.ui.theme.MustardContainer
 import org.creategoodthings.vault.ui.theme.OnMustardContainer
 import org.jetbrains.compose.resources.stringResource
@@ -106,6 +108,8 @@ import vault.composeapp.generated.resources.dropdown_closed_icon
 import vault.composeapp.generated.resources.dropdown_open_icon
 import vault.composeapp.generated.resources.hide_password
 import vault.composeapp.generated.resources.invalid_email
+import vault.composeapp.generated.resources.network_error
+import vault.composeapp.generated.resources.password_required
 import vault.composeapp.generated.resources.remove_email
 import vault.composeapp.generated.resources.select_storage
 import vault.composeapp.generated.resources.share
@@ -113,6 +117,7 @@ import vault.composeapp.generated.resources.share_storage
 import vault.composeapp.generated.resources.show_password
 import vault.composeapp.generated.resources.successful_share
 import vault.composeapp.generated.resources.try_again
+import vault.composeapp.generated.resources.username_required
 import vault.composeapp.generated.resources.visibility_off
 import vault.composeapp.generated.resources.visibility_on
 import vault.composeapp.generated.resources.welcome_premium_title
@@ -447,7 +452,8 @@ fun RegisterPage(
                         keyboardOptions = KeyboardOptions(
                             imeAction = ImeAction.Next
                         ),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = state.error == BLANK_USERNAME
                     )
                 }
 
@@ -460,7 +466,8 @@ fun RegisterPage(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = state.error == INVALID_EMAIL
                 )
 
                 OutlinedTextField(
@@ -468,6 +475,7 @@ fun RegisterPage(
                     onValueChange = viewModel::onPasswordChange,
                     label = { Text(stringResource(Res.string.password)) },
                     singleLine = true,
+                    isError = state.error == BLANK_PASSWORD,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
@@ -498,7 +506,12 @@ fun RegisterPage(
 
                 if (state.error != null) {
                     Text(
-                        text = state.error!!,
+                        text = stringResource(when(state.error!!) {
+                            BLANK_USERNAME -> Res.string.username_required
+                            BLANK_PASSWORD -> Res.string.password_required
+                            INVALID_EMAIL -> Res.string.invalid_email
+                            NETWORK_ERROR -> Res.string.network_error
+                        }),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
