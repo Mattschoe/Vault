@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.creategoodthings.vault.domain.NetworkError
+import org.creategoodthings.vault.domain.NetworkError.Companion.getResource
 import org.creategoodthings.vault.domain.Result
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.ui.isValidEmail
@@ -19,8 +21,11 @@ import org.creategoodthings.vault.ui.pages.premium.LoginStateError.*
 import org.jetbrains.compose.resources.StringResource
 import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.couldnt_find_users_with_email
+import vault.composeapp.generated.resources.invalid_email
 import vault.composeapp.generated.resources.no_email_inputted
 import vault.composeapp.generated.resources.no_storage_chosen
+import vault.composeapp.generated.resources.password_required
+import vault.composeapp.generated.resources.username_required
 
 class LoginViewModel(
     private val _productRepo: ProductRepository,
@@ -71,17 +76,17 @@ class LoginViewModel(
         val currentState = _uiState.value
         if (currentState.isLoading) return
         if (currentState.isRegisterMode && currentState.username.isBlank()) {
-            _uiState.update { it.copy(error = BLANK_USERNAME) }
+            _uiState.update { it.copy(error = BlankUsername) }
             return
         }
 
         if (!currentState.email.isValidEmail()) {
-            _uiState.update { it.copy(error = INVALID_EMAIL) }
+            _uiState.update { it.copy(error = InvalidEmail) }
             return
         }
 
         if (currentState.password.isBlank()) {
-            _uiState.update { it.copy(error = BLANK_PASSWORD) }
+            _uiState.update { it.copy(error = BlankPassword) }
             return
         }
 
@@ -102,7 +107,9 @@ class LoginViewModel(
 
             when (result) {
                 is Result.Success -> _uiState.update { it.copy(isLoading = false, error = null) }
-                is Result.Error -> { _uiState.update { it.copy(isLoading = false, error = NETWORK_ERROR) } }
+                is Result.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = NetworkError(result.error.getResource())) }
+                }
             }
         }
     }
@@ -172,11 +179,11 @@ data class LoginUIState(
     val isSuccess: Boolean = false
 )
 
-enum class LoginStateError {
-    BLANK_USERNAME,
-    BLANK_PASSWORD,
-    INVALID_EMAIL,
-    NETWORK_ERROR,
+sealed class LoginStateError {
+    object BlankUsername : LoginStateError()
+    object BlankPassword : LoginStateError()
+    object InvalidEmail : LoginStateError()
+    data class NetworkError(val message: StringResource) : LoginStateError()
 }
 
 sealed interface PurchaseOptionsState {

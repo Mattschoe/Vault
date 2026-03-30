@@ -147,5 +147,9 @@
     <string name="no_email_inputted">No emails inputted!</string>
     <string name="no_such_user">No such user:</string>
     <string name="couldnt_find_users_with_email">Couldn't find any users with the following emails:</string>
+
+    <!-- ERRORS -->
     <string name="network_error">Network error. Try again later.</string>
+    <string name="log_in_error">Error trying to log in!</string>
+    <string name="register_error">Error trying to register!</string>
 </resources>

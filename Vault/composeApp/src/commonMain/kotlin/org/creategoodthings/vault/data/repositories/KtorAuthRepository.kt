@@ -42,7 +42,7 @@ class KtorAuthRepository(
         try {
             val savedToken = _prefRepo.token.first()
             if (savedToken.isNullOrBlank()) {
-                return Error(NetworkError("token is null or blank")) //TODO: Det her skal proporgates til UI så de kan informeres om at der ikke er internet connection
+                return Error(NetworkError.TOKEN_IS_NULL_OR_BLANK)
             }
 
             val response = _client.post(AppConfig.AUTH_REFRESH_ENDPOINT) {
@@ -55,16 +55,16 @@ class KtorAuthRepository(
                 _prefRepo.setUserID(data.record.ID)
                 _currentUser.value = data.toDomain()
             } else {
-                return Error(NetworkError("Server rejected token: ${response.status}"))
+                return Error(NetworkError.SERVER_REJECTED_TOKEN)
             }
         } catch (e: ConnectTimeoutException) {
             _currentUser.value = null
-            return Error(NetworkError("Network unavailable. Keeping token."))
+            return Error(NetworkError.NETWORK_UNAVAILABLE)
         } catch (e: Exception) {
             _prefRepo.clearToken()
             _prefRepo.clearUserID()
             _currentUser.value = null
-            return Error(NetworkError("Unexpected initialization error: ${e.message}"))
+            return Error(NetworkError.UNEXPECTED_INIT_ERROR)
         }
         return Success(Unit)
     }
@@ -81,7 +81,7 @@ class KtorAuthRepository(
             _purchaseManager.logIn(_currentUser.value!!.ID)
             Success(Unit)
         } catch (e: Exception) {
-            Error(NetworkError(e.message ?: "Error trying to log in"))
+            Error(NetworkError.LOG_IN_ERROR)
         }
     }
 
@@ -101,7 +101,7 @@ class KtorAuthRepository(
             login(email, password) //Auto login for better UX
             Success(Unit)
         } catch (e: Exception) {
-            Error(NetworkError(e.message ?: "Error trying to register!"))
+            Error(NetworkError.REGISTER_ERROR)
         }
     }
 
@@ -114,14 +114,14 @@ class KtorAuthRepository(
 
     override suspend fun refreshUser(): Result<Unit, NetworkError> {
         return try {
-            val currentToken = _prefRepo.token.first() ?: return Error(NetworkError("No token"))
+            val currentToken = _prefRepo.token.first() ?: return Error(NetworkError.TOKEN_IS_NULL_OR_BLANK)
             val response = _client.post(AppConfig.AUTH_REFRESH_ENDPOINT) {
                 headers { bearerAuth(currentToken) }
             }.body<AuthResponseDTO>()
             _currentUser.value = response.toDomain()
             Success(Unit)
         } catch (e: Exception) {
-            Error(NetworkError(e.message ?: "Error trying to refresh user"))
+            Error(NetworkError.USER_REFRESH_ERROR)
         }
     }
 

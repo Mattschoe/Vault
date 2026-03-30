@@ -28,10 +28,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.creategoodthings.vault.ui.components.TextWithLink
-import org.creategoodthings.vault.ui.pages.premium.LoginStateError.BLANK_PASSWORD
-import org.creategoodthings.vault.ui.pages.premium.LoginStateError.BLANK_USERNAME
-import org.creategoodthings.vault.ui.pages.premium.LoginStateError.INVALID_EMAIL
-import org.creategoodthings.vault.ui.pages.premium.LoginStateError.NETWORK_ERROR
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.BlankPassword
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.BlankUsername
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.InvalidEmail
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError.NetworkError
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import vault.composeapp.generated.resources.Res
@@ -88,7 +88,7 @@ fun LoginSection(
                     imeAction = ImeAction.Next
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                isError = uiState.error == BLANK_USERNAME
+                isError = uiState.error == BlankUsername
             )
         }
 
@@ -102,7 +102,7 @@ fun LoginSection(
                 imeAction = ImeAction.Next
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError = uiState.error == INVALID_EMAIL
+            isError = uiState.error == InvalidEmail
         )
 
         OutlinedTextField(
@@ -110,7 +110,7 @@ fun LoginSection(
             onValueChange = onPasswordChange,
             label = { Text(stringResource(Res.string.password)) },
             singleLine = true,
-            isError = uiState.error == BLANK_PASSWORD,
+            isError = uiState.error == BlankPassword,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
@@ -140,13 +140,15 @@ fun LoginSection(
         )
 
         if (uiState.error != null) {
+            val errorResource = when (uiState.error) {
+                BlankUsername -> Res.string.username_required
+                BlankPassword -> Res.string.password_required
+                InvalidEmail -> Res.string.invalid_email
+                is NetworkError -> uiState.error.message
+            }
+
             Text(
-                text = stringResource(when (uiState.error) {
-                    BLANK_USERNAME -> Res.string.username_required
-                    BLANK_PASSWORD -> Res.string.password_required
-                    INVALID_EMAIL -> Res.string.invalid_email
-                    NETWORK_ERROR -> Res.string.network_error
-                }),
+                text = stringResource(errorResource),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
