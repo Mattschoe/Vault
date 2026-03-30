@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.creategoodthings.vault.domain.InviteError
 import org.creategoodthings.vault.domain.NetworkError
 import org.creategoodthings.vault.domain.Result
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.domain.User
 
 
@@ -16,7 +17,7 @@ interface AuthRepository {
     suspend fun initialize(): Result<Unit, NetworkError>
     suspend fun login(email: String, password: String): Result<Unit, NetworkError>
     suspend fun register(username: String, email: String, password: String): Result<Unit, NetworkError>
-    suspend fun inviteUserToStorage(storageID: String, userEmailToInvite: String): Result<Unit, InviteError>
+    suspend fun inviteUserToStorage(storageID: StorageID, userEmailToInvite: String): Result<Unit, InviteError>
     suspend fun logout()
     suspend fun refreshUser(): Result<Unit, NetworkError>
 }

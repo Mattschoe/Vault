@@ -19,9 +19,9 @@ import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.*
 class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     override suspend fun insertProduct(product: Product) {
         dao.insertProduct(ProductEntity(
-            ID = product.ID,
-            storageID = product.storageID,
-            containerID = product.containerID,
+            ID = product.ID.value,
+            storageID = product.storageID.value,
+            containerID = product.containerID?.value,
             name = product.name,
             description = product.description,
             bestBeforeDate = product.bestBefore,
@@ -35,9 +35,9 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
     override suspend fun insertProducts(products: List<Product>) {
         dao.insertProducts(products.map { product ->
             ProductEntity(
-                ID = product.ID,
-                storageID = product.storageID,
-                containerID = product.containerID,
+                ID = product.ID.value,
+                storageID = product.storageID.value,
+                containerID = product.containerID?.value,
                 name = product.name,
                 description = product.description,
                 bestBeforeDate = product.bestBefore,
@@ -51,7 +51,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override suspend fun insertStorage(storage: Storage) {
         dao.insertStorage(StorageEntity(
-            ID = storage.ID,
+            ID = storage.ID.value,
             name = storage.name,
             isDirty = true,
             isDeleted = false
@@ -60,7 +60,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override suspend fun insertContainer(container: Container) {
         dao.insertContainer(ContainerEntity(
-            ID = container.ID,
+            ID = container.ID.value,
             storageID = container.storageID,
             name = container.name,
             isDirty = true,
@@ -70,9 +70,9 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override suspend fun updateProduct(product: Product) {
         dao.updateProduct(ProductEntity(
-            ID = product.ID,
-            storageID = product.storageID,
-            containerID = product.containerID,
+            ID = product.ID.value,
+            storageID = product.storageID.value,
+            containerID = product.containerID?.value,
             name = product.name,
             description = product.description,
             bestBeforeDate = product.bestBefore,
@@ -85,7 +85,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override suspend fun updateStorage(storage: Storage) {
         dao.updateStorage(StorageEntity(
-            ID = storage.ID,
+            ID = storage.ID.value,
             name = storage.name,
             isDirty = true,
             isDeleted = false
@@ -94,9 +94,9 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override suspend fun deleteProduct(product: Product) {
         dao.updateProduct(ProductEntity(
-            ID = product.ID,
-            storageID = product.storageID,
-            containerID = product.containerID,
+            ID = product.ID.value,
+            storageID = product.storageID.value,
+            containerID = product.containerID?.value,
             name = product.name,
             description = product.description,
             bestBeforeDate = product.bestBefore,
@@ -109,20 +109,11 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
 
     override fun getStoragesWithContainersShell(): Flow<Map<Storage, List<Container>>> {
         return dao.getStoragesWithContainersShell().map { entity ->
-            entity.map { (storageEntity, containersEntity) ->
-                val storage = Storage(
-                    ID = storageEntity.ID,
-                    name = storageEntity.name
-                )
-                val containers = containersEntity.map {
-                    Container(
-                        ID = it.ID,
-                        storageID = it.storageID,
-                        name = it.name
-                    )
-                }
+            entity.entries.associate { (storageEntity, containersEntity) ->
+                val storage = storageEntity.toDomain()
+                val containers = containersEntity.map { it.toDomain() }
                 storage to containers
-            }.toMap()
+            }
         }
     }
 
@@ -130,10 +121,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         return dao.getStorageWithProducts(storageID).map { map ->
             map.entries.firstOrNull()?.let { (storageEntity, productEntities) ->
                 StorageWithProducts(
-                    storage = Storage(
-                        ID = storageEntity.ID,
-                        name = storageEntity.name
-                    ),
+                    storage = storageEntity.toDomain(),
                     products = productEntities.map { it.toDomain() }
                 )
             }
@@ -154,11 +142,7 @@ class OfflineProductRepository(private val dao: ProductDao): ProductRepository {
         return containers.map { map ->
             map.map { (containerEntity, productEntities) ->
                 ContainerWithProducts(
-                    container = Container(
-                        ID = containerEntity.ID,
-                        storageID = containerEntity.storageID,
-                        name = containerEntity.name
-                    ),
+                    container = containerEntity.toDomain(),
                     products = productEntities.map { it.toDomain() }
                 )
             }

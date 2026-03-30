@@ -54,8 +54,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.datetime.LocalDate
 import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.ContainerID
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.ProductID
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.ui.RemindMeType
 import org.creategoodthings.vault.ui.ToString
 import org.creategoodthings.vault.ui.calculateReminder
@@ -536,6 +539,7 @@ fun AddProductDialog(
                                 if (isValid) {
                                     run {
                                         onClick(Product(
+                                            ID = ProductID.generate(),
                                             name = productName,
                                             amount = amount.toInt(),
                                             description = description,
@@ -589,7 +593,7 @@ fun AddProductDialog(
 
     if (showAddContainer && storage != null) {
         AddContainerDialog(
-            storageID = storage!!.ID,
+            storageID = storage!!.ID.value,
             onConfirm = {
                 onAddContainer(it)
                 container = it
@@ -649,7 +653,7 @@ fun AddStorageDialog(onConfirm: (Storage) -> Unit, onDismiss: () -> Unit) {
                         color = if (storageName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .clickable { onConfirm(Storage(name = storageName)) }
+                            .clickable { onConfirm(Storage(ID = StorageID.generate(), name = storageName)) }
                     )
                 }
                 //endregion
@@ -710,7 +714,7 @@ fun AddContainerDialog(
                         color = if (containerName.isNotBlank()) MaterialTheme.colorScheme.tertiary else Color.Gray,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .clickable { onConfirm(Container(storageID = storageID, name = containerName)) }
+                            .clickable { onConfirm(Container(ID = ContainerID.generate(), storageID = storageID, name = containerName)) }
                     )
                 }
                 //endregion
@@ -895,7 +899,7 @@ fun WelcomeDialog(
                             color = if (isValid) MaterialTheme.colorScheme.tertiary else Color.Gray,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .clickable { if (isValid) onConfirm(Storage(name = storageName)) }
+                                .clickable { if (isValid) onConfirm(Storage(ID = StorageID.generate(), name = storageName)) }
                         )
                     }
                 }

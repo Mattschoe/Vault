@@ -3,9 +3,13 @@ package org.creategoodthings.vault.domain.repositories
 import kotlinx.coroutines.flow.Flow
 import org.creategoodthings.vault.data.local.ContainerEntity
 import org.creategoodthings.vault.data.local.ProductEntity
+import org.creategoodthings.vault.data.local.StorageEntity
 import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.ContainerID
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.ProductID
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.StorageID
 
 interface ProductRepository {
     suspend fun insertProduct(product: Product)
@@ -40,12 +44,12 @@ data class ContainerWithProducts(
 
 fun ProductEntity.toDomain(): Product {
     return Product(
-        ID = ID,
+        ID = ProductID(ID),
         name = name,
         amount = amount,
         description = description,
-        storageID = storageID,
-        containerID = containerID,
+        storageID = StorageID(storageID),
+        containerID = containerID?.let { ContainerID(it) },
         bestBefore = bestBeforeDate,
         reminderDate = reminderDate,
     )
@@ -53,8 +57,15 @@ fun ProductEntity.toDomain(): Product {
 
 fun ContainerEntity.toDomain(): Container {
     return Container(
-        ID = ID,
+        ID = ContainerID(ID),
         storageID = storageID,
+        name = name
+    )
+}
+
+fun StorageEntity.toDomain(): Storage {
+    return Storage(
+        ID = StorageID(ID),
         name = name
     )
 }

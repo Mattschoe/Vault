@@ -3,6 +3,7 @@ package org.creategoodthings.vault.domain.repositories
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.ui.pages.storage.SortOption
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -24,7 +25,7 @@ interface PreferencesRepository {
     val lastSync: Flow<Instant?>
     //endregion
 
-    suspend fun setStandardStorageID(storageID: String)
+    suspend fun setStandardStorageID(storageID: StorageID)
     suspend fun setSortOption(sortOption: SortOption)
     suspend fun setReminderTime(reminderTime: LocalTime)
     suspend fun setAmPm(amPm: Boolean)

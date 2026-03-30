@@ -9,6 +9,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import org.creategoodthings.vault.domain.Product
+import org.creategoodthings.vault.domain.ProductID
 import org.creategoodthings.vault.domain.Storage
 import org.creategoodthings.vault.domain.SuggestedProduct
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
@@ -126,7 +127,7 @@ class SuggestionsPageViewModel(
 
             _productRepo.insertProducts(drafts.map { draft ->
                 Product(
-                    ID = draft.ID,
+                    ID = ProductID(draft.ID),
                     name = draft.name,
                     amount = draft.amount,
                     description = "",

@@ -26,7 +26,7 @@ class BootReceiver : BroadcastReceiver() {
                     val products = productRepo.getAllProducts().first()
                     val notifications = products.map { product ->
                         NotificationData( //TODO better text/language
-                            ID = product.ID,
+                            ID = product.ID.value,
                             title = "Expires soon: ${product.name}",
                             message = product.description,
                             date = product.reminderDate

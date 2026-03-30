@@ -61,6 +61,7 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.ContainerID
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.ui.components.AddProductDialog
 import org.creategoodthings.vault.ui.components.AddProductFAB
@@ -114,8 +115,8 @@ fun StoragePage(
 
     //DRAG STATE
     var dragState by remember { mutableStateOf(DragState()) }
-    val dropZones = remember { mutableStateMapOf<String, DropZone>() }
-    var hoveredContainerID by remember { mutableStateOf<String?>(null) }
+    val dropZones = remember { mutableStateMapOf<ContainerID, DropZone>() }
+    var hoveredContainerID by remember { mutableStateOf<ContainerID?>(null) }
     val density = LocalDensity.current
     LaunchedEffect(dragState.dragOffset, dragState.isDragging) {
         hoveredContainerID = if (dragState.isDragging) {
@@ -124,17 +125,17 @@ fun StoragePage(
             val cardCenter = Offset(cardCenterX, cardCenterY)
 
             //Check trashcan collision first
-            val trashZone = dropZones["trashcan"]
+            val trashZone = dropZones[ContainerID("trashcan")]
             val distToTrash = if (trashZone != null) {
                 (trashZone.center - cardCenter).getDistance()
             } else {
                 Float.MAX_VALUE
             }
             val acceptedRadius = with(density) { 75.dp.toPx() }
-            if (distToTrash < acceptedRadius) "trashcan"
+            if (distToTrash < acceptedRadius) ContainerID("trashcan")
             else {
                 dropZones.values
-                    .filter { it.zoneID != "trashcan" }
+                    .filter { it.zoneID != ContainerID("trashcan") }
                     .firstOrNull { zone ->
                     zone.bounds.contains(cardCenter)
                 }?.zoneID
@@ -307,7 +308,7 @@ fun StoragePage(
                                         hoveredContainerID?.let { containerID ->
                                             val dropZone = dropZones[containerID]
                                             dragState.draggedProduct?.let { product ->
-                                                if (containerID == "trashcan") {
+                                                if (containerID == ContainerID("trashcan")) {
                                                     viewModel.deleteProduct(product)
                                                 } else {
                                                     viewModel.changeProductContainer(
@@ -374,7 +375,7 @@ fun StoragePage(
                                             hoveredContainerID?.let { containerID ->
                                                 val dropZone = dropZones[containerID]
                                                 dragState.draggedProduct?.let { product ->
-                                                    if (containerID == "trashcan") {
+                                                    if (containerID == ContainerID("trashcan")) {
                                                         viewModel.deleteProduct(product)
                                                     } else {
                                                         viewModel.changeProductContainer(
@@ -397,11 +398,11 @@ fun StoragePage(
                         if (state.unorganizedProducts.isNotEmpty()) {
                             item(key = "unorganized_container") {
                                 DroppableContainerSection(
-                                    isHovered = hoveredContainerID == "unorganized"  && hoveredContainerID != dragState.draggedProduct?.containerID,
+                                    isHovered = hoveredContainerID == ContainerID("unorganized")  && hoveredContainerID != dragState.draggedProduct?.containerID,
                                     isDragging = dragState.isDragging,
                                     onBoundsChanged = { bounds ->
-                                        dropZones["unorganized"] = DropZone(
-                                            zoneID = "unorganized",
+                                        dropZones[ContainerID("unorganized")] = DropZone(
+                                            zoneID = ContainerID("unorganized"),
                                             container = null,
                                             bounds = bounds
                                         )
@@ -444,7 +445,7 @@ fun StoragePage(
                                             hoveredContainerID?.let { containerID ->
                                                 val dropZone = dropZones[containerID]
                                                 dragState.draggedProduct?.let { product ->
-                                                    if (containerID == "trashcan") {
+                                                    if (containerID == ContainerID("trashcan")) {
                                                         viewModel.deleteProduct(product)
                                                     } else {
                                                         viewModel.changeProductContainer(
@@ -510,8 +511,8 @@ fun StoragePage(
                                 val positionInRoot = coords.positionInRoot()
                                 val size = coords.size
                                 val center = positionInRoot + Offset(size.width/2f, size.height/2f)
-                                dropZones["trashcan"] = DropZone(
-                                    zoneID = "trashcan",
+                                dropZones[ContainerID("trashcan")] = DropZone(
+                                    zoneID = ContainerID("trashcan"),
                                     bounds = Rect(
                                         offset = positionInRoot,
                                         size = Size(size.width.toFloat(), size.height.toFloat())
@@ -522,7 +523,7 @@ fun StoragePage(
                             .size(96.dp)
                             .zIndex(0.9f)
                     ) {
-                        val targetScale = if (hoveredContainerID == "trashcan") 1.12f else 1f
+                        val targetScale = if (hoveredContainerID == ContainerID("trashcan")) 1.12f else 1f
                         val scaleAnimation by animateFloatAsState(targetScale)
                         Icon(
                             imageVector = vectorResource(Res.drawable.trashcan_icon),

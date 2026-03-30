@@ -22,6 +22,7 @@ import org.creategoodthings.vault.domain.NetworkError
 import org.creategoodthings.vault.domain.Result
 import org.creategoodthings.vault.domain.Result.Error
 import org.creategoodthings.vault.domain.Result.Success
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.domain.User
 import org.creategoodthings.vault.domain.repositories.AuthRepository
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
@@ -124,13 +125,13 @@ class KtorAuthRepository(
         }
     }
 
-    override suspend fun inviteUserToStorage(storageID: String, userEmailToInvite: String): Result<Unit, InviteError> {
+    override suspend fun inviteUserToStorage(storageID: StorageID, userEmailToInvite: String): Result<Unit, InviteError> {
         return try {
             _client.post(AppConfig.INVITATIONS_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 setBody(InviteRequestDTO(
                     email = userEmailToInvite,
-                    storageID = storageID
+                    storageID = storageID.value
                 ))
             }
             Success(Unit)

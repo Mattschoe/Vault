@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalTime
 import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository.Keys.LAST_SYNC
 import org.creategoodthings.vault.data.repositories.OfflinePreferencesRepository.Keys.USER_ID
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.domain.repositories.ContainerSortOrder
 import org.creategoodthings.vault.domain.repositories.ContainerSortOrder.BEST_BEFORE
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
@@ -59,9 +60,9 @@ class OfflinePreferencesRepository(
     }
     override val userID = dataStore.data.map { it[USER_ID] }
 
-    override suspend fun setStandardStorageID(storageID: String) {
+    override suspend fun setStandardStorageID(storageID: StorageID) {
         dataStore.edit { preferences ->
-            preferences[Keys.STANDARD_STORAGE_ID] = storageID
+            preferences[Keys.STANDARD_STORAGE_ID] = storageID.value
         }
     }
 

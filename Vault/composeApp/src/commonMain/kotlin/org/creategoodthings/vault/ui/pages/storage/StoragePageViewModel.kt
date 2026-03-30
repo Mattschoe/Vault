@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.StorageID
 import org.creategoodthings.vault.domain.repositories.ContainerWithProducts
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
@@ -125,7 +126,7 @@ class StoragePageViewModel(
 
     fun updateStorageName(newName: String) {
         viewModelScope.launch {
-            _productRepo.updateStorage(Storage(ID = _storageID, name = newName))
+            _productRepo.updateStorage(Storage(ID = StorageID(_storageID), name = newName))
             if (isPremium.value) _syncManager.startSync()
         }
     }

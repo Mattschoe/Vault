@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalDate
 import org.creategoodthings.vault.domain.Container
+import org.creategoodthings.vault.domain.ContainerID
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.SuggestedProduct
 import org.creategoodthings.vault.domain.calculateDaysRemaining
@@ -540,7 +541,7 @@ data class DragState(
 
 /// Container drop zone data
 data class DropZone(
-    val zoneID: String,
+    val zoneID: ContainerID,
     val container: Container? = null,
     val bounds: Rect,
     val center: Offset = Offset.Zero
