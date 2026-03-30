@@ -162,7 +162,6 @@ fun RegisterPage(
                     TextButton(onClick = viewModel::logOut) {
                         Text(stringResource(Res.string.log_out))
                     }
-                    Spacer(Modifier.height(24.dp))
                 }
             }
         }
