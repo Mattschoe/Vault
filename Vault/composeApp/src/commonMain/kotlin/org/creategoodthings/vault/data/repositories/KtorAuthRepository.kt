@@ -3,6 +3,8 @@ package org.creategoodthings.vault.data.repositories
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -12,6 +14,7 @@ import io.ktor.http.headers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import okio.IOException
 import org.creategoodthings.vault.config.AppConfig
 import org.creategoodthings.vault.data.network.AuthResponseDTO
 import org.creategoodthings.vault.data.network.InviteRequestDTO
@@ -80,7 +83,9 @@ class KtorAuthRepository(
             _currentUser.value = response.toDomain()
             _purchaseManager.logIn(_currentUser.value!!.ID)
             Success(Unit)
-        } catch (e: Exception) {
+        } catch (_: IOException) {
+            Error(NetworkError.SERVER_OFFLINE)
+        } catch (_: Exception) {
             Error(NetworkError.LOG_IN_ERROR)
         }
     }
@@ -100,6 +105,15 @@ class KtorAuthRepository(
             }
             login(email, password) //Auto login for better UX
             Success(Unit)
+        } catch (e: ClientRequestException) {
+            val body = e.response.bodyAsText()
+            if ("validation_not_unique" in body) {
+                Error(NetworkError.EMAIL_ALREADY_REGISTERED)
+            } else {
+                Error(NetworkError.REGISTER_ERROR)
+            }
+        } catch (_: IOException) {
+            Error(NetworkError.SERVER_OFFLINE)
         } catch (e: Exception) {
             Error(NetworkError.REGISTER_ERROR)
         }

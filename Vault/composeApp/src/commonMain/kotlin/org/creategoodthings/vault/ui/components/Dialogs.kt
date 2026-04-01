@@ -100,7 +100,8 @@ import vault.composeapp.generated.resources.welcome_dialog_premium_body
 
 @Composable
 fun RequestPermissionDialog(
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    onPurchasePremium: () -> Unit
 ) {
     Dialog(onDismissRequest = onConfirm) {
         Surface(
@@ -139,6 +140,7 @@ fun RequestPermissionDialog(
                             shape = RoundedCornerShape(24.dp)
                         )
                         .padding(16.dp)
+                        .clickable { onPurchasePremium() }
                 ) {
                     Text(
                         text = stringResource(Res.string.welcome_dialog_premium_body),
@@ -759,7 +761,8 @@ fun DialogOutlinedTextField(
 
 @Composable
 fun WelcomeDialog(
-    onConfirm: (Storage) -> Unit
+    onConfirm: (Storage) -> Unit,
+    onPurchasePremium: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pageCount = pagerState.pageCount
@@ -846,6 +849,7 @@ fun WelcomeDialog(
                                     shape = RoundedCornerShape(24.dp)
                                 )
                                 .padding(16.dp)
+                                .clickable { onPurchasePremium() }
                         ) {
                             Text(
                                 text = stringResource(Res.string.welcome_dialog_premium_body),

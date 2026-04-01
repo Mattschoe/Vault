@@ -149,7 +149,9 @@
     <string name="couldnt_find_users_with_email">Couldn't find any users with the following emails:</string>
 
     <!-- ERRORS -->
-    <string name="network_error">Network error. Try again later.</string>
-    <string name="log_in_error">Error trying to log in!</string>
-    <string name="register_error">Error trying to register!</string>
+    <string name="network_error">Network error. Please try again later.</string>
+    <string name="log_in_error">Error trying to log in! Please try again later.</string>
+    <string name="register_error">Error trying to register! Please try again later.</string>
+    <string name="email_already_registered">An account with this email already exists.</string>
+    <string name="server_offline">The server seems to be offline. Please try again later.</string>
 </resources>

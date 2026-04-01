@@ -97,7 +97,8 @@ fun SuggestionsPage(
             onConfirm = {
                 storage = it
                 showNotificationDialog = true
-            }
+            },
+            onPurchasePremium = { navController.navigate(PageNavigation.Register) }
         )
     }
 
@@ -106,7 +107,8 @@ fun SuggestionsPage(
             onConfirm = {
                 showNotificationDialog = false
                 askPermission()
-            }
+            },
+            onPurchasePremium = { navController.navigate(PageNavigation.Register) }
         )
     }
 
