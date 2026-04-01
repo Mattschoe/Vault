@@ -32,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -84,14 +86,15 @@ fun ShareStorageSection(
     padding: PaddingValues
 ) {
     var emailInput by remember { mutableStateOf("") }
+    val isEmailValid = emailInput.trim().isValidEmail()
     val emails = remember { mutableStateSetOf<String>() }
     var hasEmailError by remember { mutableStateOf(false) }
     var showChooseStorage by remember { mutableStateOf(false) }
     var selectedStorage by remember { mutableStateOf<Storage?>(null) }
 
     fun addEmail() {
-        val trimmed = emailInput.trim()
-        if (trimmed.isValidEmail()) {
+        if (isEmailValid) {
+            val trimmed = emailInput.trim()
             if (trimmed !in emails) {
                 emails.add(trimmed)
                 emailInput = ""
@@ -244,18 +247,24 @@ fun ShareStorageSection(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
                             ),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { addEmail() }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .aspectRatio(1f),
+                                        imageVector = vectorResource(Res.drawable.check_circle_icon),
+                                        tint = if (isEmailValid) MaterialTheme.colorScheme.tertiary else Color.Gray,
+                                        contentDescription = stringResource(Res.string.add_email),
+                                    )
+                                }
+                            }
                         )
                         Spacer(Modifier.width(8.dp))
-                        Icon(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .aspectRatio(1f)
-                                .clickable { addEmail() },
-                            imageVector = vectorResource(Res.drawable.check_circle_icon),
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            contentDescription = stringResource(Res.string.add_email),
-                        )
+
                     }
                     if (hasEmailError) {
                         Text(
