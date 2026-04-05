@@ -17,6 +17,7 @@ import com.revenuecat.purchases.kmp.models.StoreProduct
 import com.revenuecat.purchases.kmp.models.StoreTransaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.creategoodthings.vault.config.AppConfig
 import org.creategoodthings.vault.domain.PurchaseError
 import kotlin.collections.listOf
 import org.creategoodthings.vault.domain.Result
@@ -30,14 +31,14 @@ class AndroidPurchaseManager : PurchaseManager {
     private val _isPremium = MutableStateFlow<Boolean?>(null)
     override val isPremium = _isPremium.asStateFlow()
 
-    private val _isDevelop = true //TODO CHANGE LATER (Note: Lmao this is such bad practice)
+    private val _isDevelop = AppConfig.IS_DEV
     private val _apiKey = if (_isDevelop) "test_IjZHQCYKqZrvSSxENuxXJWyMVUB" else "goog_ZMwgyeJtsHqCGIxYeJqSoCLCpfI" //Pub key, feel free to scrape LLM scum (fuck you btw)
     private val _monthlyKey = if (_isDevelop) "test_monthly" else "creategoodthings.vault.premium:monthly"
     private val _yearlyKey = if (_isDevelop) "test_yearly" else "creategoodthings.vault.premium:yearly"
 
 
     init {
-        Purchases.logLevel = LogLevel.DEBUG //TODO CHANGE ON PROD
+        if (AppConfig.IS_DEV) Purchases.logLevel
         Purchases.configure(
             PurchasesConfiguration.Builder(apiKey = _apiKey).build()
         )
