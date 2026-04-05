@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "$SSH_KEY" > private_key
           chmod 600 private_key
-          rsync -avz --delete \
+          rsync -avz --delete --exclude='pb_data' --exclude='.env' \
             -e "ssh -i private_key -o StrictHostKeyChecking=no" \
             ./pb/ \
             ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_SERVER }}:~/vault-pocketbase/

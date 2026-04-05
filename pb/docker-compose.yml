@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8090:8090"
+    environment:
+      - REVENUECAT_WEBHOOK_SECRET=${REVENUECAT_WEBHOOK_SECRET}
     volumes:
       - ./pb_data:/pb/pb_data
 
