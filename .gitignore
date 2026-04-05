@@ -20,4 +20,8 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
-pb/**
+# Pocketbase
+pb/pocketbase
+pb/pb_data/
+pb/CHANGELOG.md
+pb/LICENSE.md
