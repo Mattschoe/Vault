@@ -105,9 +105,8 @@ fun UnlockPremiumSection(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
