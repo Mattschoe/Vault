@@ -77,21 +77,21 @@ class HomePageViewModel(
     fun addProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.insertProduct(product)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.deleteProduct(product)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun changeStorage(newStorage: Storage) {
         viewModelScope.launch {
             _preferencesRepo.setStandardStorageID(newStorage.ID)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
@@ -99,14 +99,14 @@ class HomePageViewModel(
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
             if (changeToStore) _preferencesRepo.setStandardStorageID(storage.ID)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun addContainer(container: Container) {
         viewModelScope.launch {
             _productRepo.insertContainer(container)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 }

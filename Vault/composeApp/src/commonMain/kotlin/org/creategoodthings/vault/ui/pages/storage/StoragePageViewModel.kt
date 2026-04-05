@@ -127,21 +127,21 @@ class StoragePageViewModel(
     fun updateStorageName(newName: String) {
         viewModelScope.launch {
             _productRepo.updateStorage(Storage(ID = StorageID(_storageID), name = newName))
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun addProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.insertProduct(product)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             _productRepo.deleteProduct(product)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
@@ -149,14 +149,14 @@ class StoragePageViewModel(
         viewModelScope.launch {
             _productRepo.insertStorage(storage)
             if (changeToStore) _prefRepo.setStandardStorageID(storage.ID)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
     fun addContainer(container: Container) {
         viewModelScope.launch {
             _productRepo.insertContainer(container)
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 
@@ -167,7 +167,7 @@ class StoragePageViewModel(
     fun changeProductContainer(product: Product, newContainer: Container?) {
         viewModelScope.launch {
             _productRepo.updateProduct(product.copy(containerID = newContainer?.ID))
-            if (isPremium.value) _syncManager.startSync()
+            if (isPremium.value == true) _syncManager.startSync()
         }
     }
 }

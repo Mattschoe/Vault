@@ -5,7 +5,7 @@ import org.creategoodthings.vault.domain.PurchaseError
 import org.creategoodthings.vault.domain.Result
 
 interface PurchaseManager {
-    val isPremium: StateFlow<Boolean>
+    val isPremium: StateFlow<Boolean?>
     suspend fun getSubscriptionOptions(): Result<List<SubscriptionOption>, PurchaseError>
     suspend fun purchase(option: SubscriptionOption): Result<Unit, PurchaseError>
     suspend fun logIn(userID: String)

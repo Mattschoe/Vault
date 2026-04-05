@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import org.creategoodthings.vault.ui.pages.PageShell
 import org.jetbrains.compose.resources.stringResource
 import vault.composeapp.generated.resources.Res
@@ -46,16 +45,7 @@ fun RegisterPage(
             }
         }
     ) { padding ->
-        if (isPremium) {
-            ShareStorageSection(
-                shareState = shareState,
-                errorEmails = errorEmails,
-                storages = storages,
-                onShare = viewModel::shareStorage,
-                onResetShareState = viewModel::resetShareStorageState,
-                padding = padding
-            )
-        } else if (!state.isSuccess) {
+        if (!state.isSuccess) {
             LoginSection(
                 uiState = state,
                 onUsernameChange = viewModel::onUsernameChange,
@@ -65,7 +55,16 @@ fun RegisterPage(
                 onToggleMode = viewModel::toggleMode,
                 padding = padding
             )
-        } else {
+        } else if (isPremium == true) {
+            ShareStorageSection(
+                shareState = shareState,
+                errorEmails = errorEmails,
+                storages = storages,
+                onShare = viewModel::shareStorage,
+                onResetShareState = viewModel::resetShareStorageState,
+                padding = padding
+            )
+        } else if (isPremium == false) {
             UnlockPremiumSection(
                 purchaseOptions = purchaseOptions,
                 isOpen = openPurchaseWindow,
@@ -76,5 +75,6 @@ fun RegisterPage(
                 padding = padding
             )
         }
+        // isPremium == null: premium state still loading, show nothing
     }
 }

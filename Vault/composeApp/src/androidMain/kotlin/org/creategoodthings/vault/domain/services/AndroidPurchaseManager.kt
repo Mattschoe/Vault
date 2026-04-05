@@ -27,7 +27,7 @@ import java.util.Currency
 import java.text.NumberFormat
 
 class AndroidPurchaseManager : PurchaseManager {
-    private val _isPremium = MutableStateFlow(false)
+    private val _isPremium = MutableStateFlow<Boolean?>(null)
     override val isPremium = _isPremium.asStateFlow()
 
     private val _isDevelop = true //TODO CHANGE LATER (Note: Lmao this is such bad practice)
@@ -85,6 +85,7 @@ class AndroidPurchaseManager : PurchaseManager {
     }
 
     override suspend fun logIn(userID: String) {
+        _isPremium.value = null
         val result = Purchases.sharedInstance.awaitLogIn(userID)
         updatePremiumStatus(result.customerInfo)
     }
