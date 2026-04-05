@@ -28,7 +28,7 @@ fun RegisterPage(
     val isPremium by viewModel.isPremium.collectAsState()
     val storages by viewModel.storages.collectAsState()
     val errorEmails by viewModel.errorEmails.collectAsState()
-    var openPurchaseWindow by remember { mutableStateOf(false) }
+    var openPurchaseWindow by remember { mutableStateOf(state.isSuccess && isPremium == false) }
 
     PageShell(
         bottomBar = {
@@ -72,6 +72,7 @@ fun RegisterPage(
                 onDismiss = { openPurchaseWindow = false },
                 onPurchase = viewModel::purchaseSubscription,
                 onRetry = viewModel::getPurchaseOptions,
+                onLogout = viewModel::logOut,
                 padding = padding
             )
         }

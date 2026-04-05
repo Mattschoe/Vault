@@ -75,7 +75,7 @@ fun LoginSection(
     ) {
         Text(
             text = stringResource(if (uiState.isRegisterMode) Res.string.create_account else Res.string.welcome_back),
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineLarge
         )
 
         if (uiState.isRegisterMode) {

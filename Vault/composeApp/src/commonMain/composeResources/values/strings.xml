@@ -132,6 +132,8 @@
     <string name="cloud_storage">Cloud Storage</string>
     <string name="sharing_storage_with_family">Sharing storage between family members</string>
     <string name="try_again">Try again</string>
+    <string name="premium_dismiss_warning_title">Are you sure?</string>
+    <string name="premium_dismiss_warning_body">Login is only designed for premium users. Not buying premium will log you out.</string>
     <string name="welcome_premium_title">Welcome to Premium!</string>
     <string name="share_storage">Share storage</string>
     <string name="select_storage">Select storage</string>
