@@ -30,6 +30,7 @@ import org.creategoodthings.vault.domain.User
 import org.creategoodthings.vault.domain.repositories.AuthRepository
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.services.PurchaseManager
+import org.creategoodthings.vault.ui.pages.premium.LoginStateError
 
 
 class KtorAuthRepository(
@@ -57,6 +58,7 @@ class KtorAuthRepository(
                 _prefRepo.setToken(data.token)
                 _prefRepo.setUserID(data.record.ID)
                 _currentUser.value = data.toDomain()
+                _purchaseManager.logIn(data.record.ID)
             } else {
                 return Error(NetworkError.SERVER_REJECTED_TOKEN)
             }
@@ -85,6 +87,10 @@ class KtorAuthRepository(
             Success(Unit)
         } catch (_: IOException) {
             Error(NetworkError.SERVER_OFFLINE)
+        } catch (e: ClientRequestException) {
+          val body = e.response.bodyAsText()
+          if ("Failed to authenticate" in body) Error(NetworkError.NO_USER_FOUND)
+          else Error(NetworkError.LOG_IN_ERROR)
         } catch (_: Exception) {
             Error(NetworkError.LOG_IN_ERROR)
         }

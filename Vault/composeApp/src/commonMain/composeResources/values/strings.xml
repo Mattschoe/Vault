@@ -154,4 +154,5 @@
     <string name="register_error">Error trying to register! Please try again later.</string>
     <string name="email_already_registered">An account with this email already exists.</string>
     <string name="server_offline">The server seems to be offline. Please try again later.</string>
+    <string name="no_user_found">No user found!</string>
 </resources>

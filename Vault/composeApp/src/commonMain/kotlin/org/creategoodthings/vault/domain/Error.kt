@@ -7,6 +7,7 @@ import vault.composeapp.generated.resources.Res
 import vault.composeapp.generated.resources.log_in_error
 import vault.composeapp.generated.resources.network_error
 import vault.composeapp.generated.resources.email_already_registered
+import vault.composeapp.generated.resources.no_user_found
 import vault.composeapp.generated.resources.register_error
 import vault.composeapp.generated.resources.server_offline
 
@@ -23,7 +24,8 @@ enum class NetworkError : Error {
     LOG_IN_ERROR,
     REGISTER_ERROR,
     EMAIL_ALREADY_REGISTERED,
-    USER_REFRESH_ERROR;
+    USER_REFRESH_ERROR,
+    NO_USER_FOUND;
 
     companion object {
         /**
@@ -38,6 +40,7 @@ enum class NetworkError : Error {
                 REGISTER_ERROR -> Res.string.register_error
                 EMAIL_ALREADY_REGISTERED -> Res.string.email_already_registered
                 SERVER_OFFLINE -> Res.string.server_offline
+                NO_USER_FOUND -> Res.string.no_user_found
                 NETWORK_UNAVAILABLE, USER_REFRESH_ERROR, SERVER_REJECTED_TOKEN,
                 TOKEN_IS_NULL_OR_BLANK, SERVER_REJECTED_TOKEN, UNEXPECTED_INIT_ERROR -> Res.string.network_error
             }

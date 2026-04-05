@@ -70,9 +70,7 @@ fun UnlockPremiumSection(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        TextButton(onClick = onOpen) {
-            Text("Unlock premium")
-        }
+        TextButton(onClick = onOpen) { Text("Unlock premium") }
     }
 
     if (isOpen) {
@@ -91,6 +89,7 @@ fun UnlockPremiumSection(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Column(
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
