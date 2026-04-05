@@ -1,0 +1,12 @@
+services:
+  pocketbase:
+    build: .
+    container_name: vault-pocketbase
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - ./pb_data:/pb/pb_data
+
+volumes:
+  pb_data:
