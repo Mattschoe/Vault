@@ -36,7 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -111,10 +111,10 @@ fun HomePage(
     navController: NavController,
     viewModel: HomePageViewModel
 ) {
-    val username by viewModel.username.collectAsState()
-    val dataState by viewModel.uiState.collectAsState()
+    val username by viewModel.username.collectAsStateWithLifecycle()
+    val dataState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val syncError by viewModel.syncError.collectAsState()
+    val syncError by viewModel.syncError.collectAsStateWithLifecycle()
 
     //DRAG STATE
     var dragState by remember { mutableStateOf(DragState()) }

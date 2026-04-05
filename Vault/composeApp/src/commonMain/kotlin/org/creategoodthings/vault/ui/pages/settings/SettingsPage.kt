@@ -28,7 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,11 +73,11 @@ fun SettingsPage(
     navController: NavController,
     viewModel: SettingsViewModel
 ) {
-    val reminderTime by viewModel.reminderTime.collectAsState()
-    val amPm by viewModel.amPm.collectAsState()
+    val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
+    val amPm by viewModel.amPm.collectAsStateWithLifecycle()
     var showTimePickerDialog by remember { mutableStateOf(false) }
 
-    val containerSortOrder by viewModel.containerSortOrder.collectAsState()
+    val containerSortOrder by viewModel.containerSortOrder.collectAsStateWithLifecycle()
     val choices = remember { ContainerSortOrder.entries.map {
         DropdownOption(
             value = it,

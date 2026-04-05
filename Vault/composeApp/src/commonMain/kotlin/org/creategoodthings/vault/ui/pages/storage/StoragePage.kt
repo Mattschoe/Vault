@@ -30,7 +30,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,12 +100,12 @@ fun StoragePage(
     modifier: Modifier = Modifier,
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
-    val storage2Containers by viewModel.storages.collectAsState()
-    val selectedStorage by viewModel.selectedStorage.collectAsState()
+    val storage2Containers by viewModel.storages.collectAsStateWithLifecycle()
+    val selectedStorage by viewModel.selectedStorage.collectAsStateWithLifecycle()
 
-    val sortOption by viewModel.sortOption.collectAsState()
-    val storageName by viewModel.storageName.collectAsState()
-    val state by viewModel.products.collectAsState()
+    val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
+    val storageName by viewModel.storageName.collectAsStateWithLifecycle()
+    val state by viewModel.products.collectAsStateWithLifecycle()
 
     var hasInitialFocus by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }

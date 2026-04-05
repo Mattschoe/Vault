@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,12 +22,12 @@ import vault.composeapp.generated.resources.log_out
 fun RegisterPage(
     viewModel: LoginViewModel
 ) {
-    val state by viewModel.uiState.collectAsState()
-    val purchaseOptions by viewModel.purchaseOptions.collectAsState()
-    val shareState by viewModel.shareState.collectAsState()
-    val isPremium by viewModel.isPremium.collectAsState()
-    val storages by viewModel.storages.collectAsState()
-    val errorEmails by viewModel.errorEmails.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val purchaseOptions by viewModel.purchaseOptions.collectAsStateWithLifecycle()
+    val shareState by viewModel.shareState.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+    val storages by viewModel.storages.collectAsStateWithLifecycle()
+    val errorEmails by viewModel.errorEmails.collectAsStateWithLifecycle()
     var openPurchaseWindow by remember { mutableStateOf(state.isSuccess && isPremium == false) }
 
     PageShell(

@@ -1,6 +1,6 @@
 package org.creategoodthings.vault.ui.pages.suggestionsPage
 
-import androidx.compose.runtime.collectAsState
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
