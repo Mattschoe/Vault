@@ -41,7 +41,8 @@ fun ApplicationNavigationHost(
                     appContainer.notificationScheduler,
                     appContainer.permissionController,
                     _syncManager = appContainer.syncManager,
-                    _purchaseManager = appContainer.purchaseManager
+                    _purchaseManager = appContainer.purchaseManager,
+                    _authRepo = appContainer.authRepository
                 )
             }
             HomePage(

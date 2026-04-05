@@ -50,7 +50,7 @@ data class UserDTO(
     @SerialName("id") val ID: String,
     @SerialName("email") val email: String,
     @SerialName("is_premium") val isPremium: Boolean = false,
-    @SerialName("username") val username: String? = null,
+    @SerialName("name") val username: String? = null,
     @SerialName("created") val created: String? = null
 )
 

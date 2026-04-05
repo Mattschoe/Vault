@@ -4,5 +4,6 @@ data class User(
     val ID: String,
     val email: String,
     val token: String,
-    val isPremium: Boolean
+    val isPremium: Boolean,
+    val username: String? = null
 )

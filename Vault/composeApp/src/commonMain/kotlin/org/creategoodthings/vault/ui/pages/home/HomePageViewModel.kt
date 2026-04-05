@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.creategoodthings.vault.domain.Container
 import org.creategoodthings.vault.domain.Product
 import org.creategoodthings.vault.domain.Storage
+import org.creategoodthings.vault.domain.repositories.AuthRepository
 import org.creategoodthings.vault.domain.repositories.PreferencesRepository
 import org.creategoodthings.vault.domain.repositories.ProductRepository
 import org.creategoodthings.vault.domain.repositories.StorageWithProducts
@@ -29,7 +30,8 @@ class HomePageViewModel(
     private val _notificationScheduler: NotificationScheduler,
     private val _permissionController: PermissionController,
     private val _syncManager: SyncManager,
-    private val _purchaseManager: PurchaseManager
+    private val _purchaseManager: PurchaseManager,
+    private val _authRepo: AuthRepository
 ): ViewModel() {
     private val _products = _productRepo.getProductsOrderedByBB()
     private val _storages = _productRepo.getStoragesWithContainersShell()
@@ -45,6 +47,12 @@ class HomePageViewModel(
             }
         }
     }
+
+    val username = _authRepo.currentUser.map { it?.username }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
 
     val isPremium = _purchaseManager.isPremium
     val syncError = _syncManager.lastError

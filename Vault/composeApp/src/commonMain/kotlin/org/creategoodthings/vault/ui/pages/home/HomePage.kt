@@ -111,7 +111,7 @@ fun HomePage(
     navController: NavController,
     viewModel: HomePageViewModel
 ) {
-    val user = remember { "Matthias" }
+    val username by viewModel.username.collectAsState()
     val dataState by viewModel.uiState.collectAsState()
 
     val syncError by viewModel.syncError.collectAsState()
@@ -206,17 +206,19 @@ fun HomePage(
                                     ) {
                                         Column {
                                             Text(
-                                                text = stringResource(Res.string.welcome) + ",",
+                                                text = if (username != null) stringResource(Res.string.welcome) + "," else stringResource(Res.string.welcome) + "!",
                                                 color = MaterialTheme.colorScheme.primary,
                                                 fontWeight = FontWeight.Bold,
                                                 style = MaterialTheme.typography.headlineLarge
                                             )
-                                            Text(
-                                                text = user,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                fontWeight = FontWeight.Bold,
-                                                style = MaterialTheme.typography.headlineLarge
-                                            )
+                                            if (username != null) {
+                                                Text(
+                                                    text = username!!.capitalize(Locale.current),
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.Bold,
+                                                    style = MaterialTheme.typography.headlineLarge
+                                                )
+                                            }
                                         }
 
 

@@ -163,9 +163,10 @@ class KtorAuthRepository(
 
 fun AuthResponseDTO.toDomain(): User {
     return User(
-        ID = this.record.ID,
-        email = this.record.email,
-        token = this.token,
-        isPremium = this.record.isPremium
+        ID = record.ID,
+        email = record.email,
+        token = token,
+        isPremium = record.isPremium,
+        username = record.username
     )
 }
