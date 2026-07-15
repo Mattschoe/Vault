@@ -279,7 +279,7 @@ fun StoragePage(
                     is Flat -> {
                         items(
                             items = state.products,
-                            key = { it.ID }
+                            key = { it.ID.value }
                         ) { product ->
                             val isBeingDragged = dragState.draggedProduct?.ID == product.ID
                             var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
@@ -329,7 +329,7 @@ fun StoragePage(
                     is Grouped -> {
                         state.groups.forEach { (container, products) ->
 
-                            item(key = container.ID) {
+                            item(key = container.ID.value) {
                                 DroppableContainerSection(
                                     isHovered = hoveredContainerID == container.ID && hoveredContainerID != dragState.draggedProduct?.containerID,
                                     isDragging = dragState.isDragging,
@@ -345,7 +345,7 @@ fun StoragePage(
                             }
                             items(
                                 items = products,
-                                key = { it.ID }
+                                key = { it.ID.value }
                             ) { product ->
                                 val isBeingDragged = dragState.draggedProduct?.ID == product.ID
                                 var draggedItemPositionInRoot by remember { mutableStateOf(Offset.Zero) }
@@ -413,7 +413,7 @@ fun StoragePage(
 
                             items(
                                 items = state.unorganizedProducts,
-                                key = { it.ID }
+                                key = { it.ID.value }
                             ) { product ->
                                 val isBeingDragged = dragState.draggedProduct?.ID == product.ID
                                 var myItemPosition by remember { mutableStateOf(Offset.Zero) }
